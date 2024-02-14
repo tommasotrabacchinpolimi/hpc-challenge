@@ -135,7 +135,7 @@ void conjugate_gradient_v2(const double * A, const double * b, double * x, size_
     double dot_result1 = 0.0;
     rr_new = 0.0;
     auto start = std::chrono::high_resolution_clock::now();
-#pragma omp parallel default(none) shared(max_iters, size, rel_error, A, p, Ap, x, r, dot_result1, rr_new) firstprivate(alpha, beta, rr, bb, num_iters) num_threads(4)
+#pragma omp parallel default(none) shared(max_iters, size, rel_error, A, p, Ap, x, r, dot_result1, rr_new) firstprivate(alpha, beta, rr, bb, num_iters)
     {
         int th_id = omp_get_thread_num();
         int th_n = omp_get_num_threads();
@@ -246,7 +246,7 @@ void print_sol_head(size_t n, double* sol) {
 }
 
 int main() {
-    size_t size = 500;
+    size_t size = 100;
     int max_iters = 2000;
     double tol = 1e-6;
     double* matrix;
@@ -256,11 +256,12 @@ int main() {
     auto* sol1 = new double[size];
     auto* sol2 = new double[size];
     std::cout << "starting conjugate gradient" << std::endl;
-    conjugate_gradient(matrix, rhs, sol2, size, max_iters, tol);
-    print_sol_head(5, sol2);
     transpose_matrix(size, matrix);
     conjugate_gradient_v2(matrix, rhs, sol1, size, max_iters, tol);
     print_sol_head(5, sol1);
+    conjugate_gradient(matrix, rhs, sol2, size, max_iters, tol);
+    print_sol_head(5, sol2);
+
     std::cout << "speedup: " <<(double)serial_time/(double)parallel_time << std::endl;
     return 0;
 }
