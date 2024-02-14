@@ -245,8 +245,9 @@ void print_sol_head(size_t n, double* sol) {
     }
 }
 
+
 int main() {
-    size_t size = 100;
+    size_t size = 250;
     int max_iters = 2000;
     double tol = 1e-6;
     double* matrix;
