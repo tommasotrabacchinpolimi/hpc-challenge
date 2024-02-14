@@ -137,6 +137,8 @@ void conjugate_gradient_v2(const double * A, const double * b, double * x, size_
     auto start = std::chrono::high_resolution_clock::now();
 #pragma omp parallel default(none) shared(max_iters, size, rel_error, A, p, Ap, x, r, dot_result1, rr_new) firstprivate(alpha, beta, rr, bb, num_iters) num_threads(4)
     {
+        int th_id = omp_get_thread_num();
+        int th_n = omp_get_num_threads();
         for (num_iters = 1; num_iters <= max_iters; num_iters++) {
 
             /*
@@ -149,14 +151,14 @@ void conjugate_gradient_v2(const double * A, const double * b, double * x, size_
             }
              */
 
-            int th_id = omp_get_thread_num();
-            int th_n = omp_get_num_threads();
-            for(size_t i = th_id; i < size; i+=th_n) {
+
+            for (size_t i = th_id; i < size; i += th_n) {
                 Ap[i] = 0.0;
-                for(size_t j = 0; j < size; j++) {
-                    Ap[i] += A[j*size + i] * p[j];
+                for (size_t j = 0; j < size; j++) {
+                    Ap[i] += A[j * size + i] * p[j];
                 }
             }
+#pragma omp barrier
 
 
 #pragma omp single
@@ -164,7 +166,7 @@ void conjugate_gradient_v2(const double * A, const double * b, double * x, size_
                 dot_result1 = 0.0;
             }
 #pragma omp for schedule(static, (int)size/4) reduction(+:dot_result1)
-            for(size_t i = 0; i < size; i++) {
+            for (size_t i = 0; i < size; i++) {
                 dot_result1 += p[i] * Ap[i];
             }
             alpha = rr / dot_result1;
@@ -176,19 +178,20 @@ void conjugate_gradient_v2(const double * A, const double * b, double * x, size_
                 x[i] = alpha * p[i] + x[i];
             }
              */
-            for(size_t i = th_id; i < size; i+=th_n) {
+            for (size_t i = th_id; i < size; i += th_n) {
                 x[i] = alpha * p[i] + x[i];
             }
+#pragma omp barrier
             /*
             #pragma omp for schedule(static, (int)size/4)
             for(size_t i = 0; i < size; i++) {
                 r[i] = -alpha * Ap[i] + r[i];
             }
              */
-            for(size_t i = th_id; i < size; i+=th_n) {
+            for (size_t i = th_id; i < size; i += th_n) {
                 r[i] = -alpha * Ap[i] + r[i];
             }
-
+#pragma omp barrier
 
 
 #pragma omp single
@@ -196,9 +199,10 @@ void conjugate_gradient_v2(const double * A, const double * b, double * x, size_
                 rr_new = 0.0;
             }
 #pragma omp for schedule(static, (int)size/4) reduction(+:rr_new)
-            for(size_t i = 0; i < size; i++) {
+            for (size_t i = 0; i < size; i++) {
                 rr_new += r[i] * r[i];
             }
+#pragma omp barrier
 
 
             beta = rr_new / rr;
@@ -210,9 +214,11 @@ void conjugate_gradient_v2(const double * A, const double * b, double * x, size_
                 p[i] =  r[i] + beta * p[i];
             }
              */
-            for(size_t i = th_id; i < size; i+=th_n) {
-                p[i] =  r[i] + beta * p[i];
+            for (size_t i = th_id; i < size; i += th_n) {
+                p[i] = r[i] + beta * p[i];
+
             }
+#pragma omp barrier
         }
     }
     auto stop = std::chrono::high_resolution_clock::now();
@@ -252,7 +258,7 @@ int main() {
     std::cout << "starting conjugate gradient" << std::endl;
     conjugate_gradient(matrix, rhs, sol2, size, max_iters, tol);
     print_sol_head(5, sol2);
-    //transpose_matrix(size, matrix);
+    transpose_matrix(size, matrix);
     conjugate_gradient_v2(matrix, rhs, sol1, size, max_iters, tol);
     print_sol_head(5, sol1);
     std::cout << "speedup: " <<(double)serial_time/(double)parallel_time << std::endl;
