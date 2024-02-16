@@ -97,7 +97,7 @@ void conjugate_gradients_parallel(const double * A, const double * b, double * x
     {
         for (num_iters = 1; num_iters <= max_iters; num_iters++) {
 
-            #pragma omp for
+            #pragma omp for nowait
             for (size_t i = 0; i < size; i += 1) {
                 Ap[i] = 0.0;
                 for (size_t j = 0; j < size; j++) {
