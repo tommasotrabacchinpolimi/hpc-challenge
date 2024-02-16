@@ -93,7 +93,7 @@ void conjugate_gradients_parallel(const double * A, const double * b, double * x
     rr_new = 0.0;
     int total_iterations = 0;
     auto start = std::chrono::high_resolution_clock::now();
-    #pragma omp parallel default(none) shared(max_iters, size, rel_error, A, p, Ap, x, r, dot_result, rr_new, total_iterations) firstprivate(alpha, beta, rr, bb, num_iters) num_threads(4)
+    #pragma omp parallel default(none) shared(max_iters, size, rel_error, A, p, Ap, x, r, dot_result, rr_new, total_iterations) firstprivate(alpha, beta, rr, bb, num_iters) num_threads(threads_number)
     {
         for (num_iters = 1; num_iters <= max_iters; num_iters++) {
 
