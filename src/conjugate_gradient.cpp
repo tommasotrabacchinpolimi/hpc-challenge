@@ -105,7 +105,6 @@ void conjugate_gradients_parallel(const double * A, const double * b, double * x
                 }
             }
 
-            #pragma omp barrier
 
 
             #pragma omp single
