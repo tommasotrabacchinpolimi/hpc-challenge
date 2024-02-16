@@ -233,7 +233,8 @@ int main(int argc, char ** argv)
     int size = 5000;
     int max_iters = 1000;
     double rel_error = 1e-9;
-    int trials = 1;
+    int serial_trials = 1;
+    int parallel_trials = 1;
     int blank_trials = 0;
     int threads_number = 1;
 
@@ -241,16 +242,16 @@ int main(int argc, char ** argv)
     if(argc > 1) size = atoi(argv[1]);
     if(argc > 2) max_iters = atoi(argv[2]);
     if(argc > 3) rel_error = atof(argv[3]);
-    if(argc > 4) trials = atoi(argv[4]);
-    if(argc > 5) blank_trials = atoi(argv[5]);
+    if(argc > 4) serial_trials = atoi(argv[4]);
+    if(argc > 5) parallel_trials = atoi(argv[5]);
     if(argc > 6) threads_number = atoi(argv[6]);
 
     printf("Command line arguments:\n");
     printf("  matrix_size: %d\n", size);
     printf("  max_iters:         %d\n", max_iters);
     printf("  rel_error:         %e\n", rel_error);
-    printf("  trials number:         %d\n", trials);
-    printf("  blank trials number:         %d\n", blank_trials);
+    printf("  serial trials number:         %d\n", serial_trials);
+    printf("  parallel trials number:         %d\n", parallel_trials);
     printf("  threads number:         %d\n", threads_number);
     printf("\n");
 
@@ -264,23 +265,23 @@ int main(int argc, char ** argv)
 
 
 
-    for(int i = 0; i < trials; i++) {
+    for(int i = 0; i < serial_trials; i++) {
         long tmp;
         conjugate_gradients(matrix, rhs, sol, size, max_iters, rel_error, &tmp);
         serial_execution_time += tmp;
         memset(sol, 0, sizeof(double) * size);
     }
 
-    for(int i = 0; i < trials; i++) {
+    for(int i = 0; i < parallel_trials; i++) {
         long tmp;
         conjugate_gradients_parallel(matrix, rhs, sol, size, max_iters, rel_error, threads_number, &tmp);
         parallel_execution_time += tmp;
         memset(sol, 0, sizeof(double) * size);
     }
 
-    std::cout << "Serial average execution time: " << (double)serial_execution_time/trials << std::endl;
-    std::cout << "Parallel average execution time: " << (double)parallel_execution_time/trials << std::endl;
-    std::cout << "Speedup: " << (double)serial_execution_time/(double)parallel_execution_time << std::endl;
+    std::cout << "Serial average execution time: " << (double)serial_execution_time/serial_trials << std::endl;
+    std::cout << "Parallel average execution time: " << (double)parallel_execution_time/parallel_trials << std::endl;
+    std::cout << "Speedup: " << (double)((double)serial_execution_time/serial_trials)/((double)parallel_execution_time/parallel_trials) << std::endl;
     printf("Finished successfully\n");
 
     return 0;
