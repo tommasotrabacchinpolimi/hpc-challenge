@@ -90,7 +90,7 @@ __device__ void row_column_mult(const double* A, unsigned int row, int size, con
     }
 
     for(unsigned int i = threadIdx.x; iter_n < size; i+=2*blockSize) {
-        sArr[threadIdx.x] = (i<size)?A[row*size + i]*p[i]:0.0 + ((i + blockSize<size)?A[row*size + i + blockSize]*p[i + blockSize]:0.0);
+        sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*p[i + blockSize]:0.0);
         for (unsigned int stride = blockSize/2; stride >= 1;
              stride = stride>>1)
         {
@@ -165,8 +165,10 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* out
     if(threadIdx.x == 0) {
         outArray[blockIdx.x] = 0.0;
     }
-    for(unsigned int i = blockIdx.x; 2*blockSize*i < size; i+=gridSize) {
-        sArr[threadIdx.x] = (i*2*blockSize + threadIdx.x<size)?x[i*2*blockSize + threadIdx.x]*y[i*2*blockSize + threadIdx.x]:0.0 + ((i*blockSize*2 + threadIdx.x + blockSize<size)?x[i*blockSize*2 + threadIdx.x + blockSize]*y[i*blockSize*2 + threadIdx.x + blockSize]:0.0);
+    for(unsigned int i = blockIdx.x; blockSize*i < size; i+=gridSize) {
+        sArr[threadIdx.x] = ((i*2*blockSize + threadIdx.x<size)?x[i*2*blockSize + threadIdx.x]*y[i*2*blockSize + threadIdx.x]:0.0) + ((i*blockSize*2 + threadIdx.x + blockSize<size)?x[i*blockSize*2 + threadIdx.x + blockSize]*y[i*blockSize*2 + threadIdx.x + blockSize]:0.0);
+        //sArr[threadIdx.x] = (i*blockSize + threadIdx.x<size)?x[i*blockSize + threadIdx.x]*y[i*blockSize + threadIdx.x]:0.0;
+
         for (unsigned int stride = blockSize/2; stride >= 1;
              stride = stride>>1)
         {
@@ -368,6 +370,19 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     cudaFree(rr_new);
 }
 
+void print_sol(double* sol) {
+    for(int i = 0; i < 5; i++) {
+        std::cout << sol[i] << std::endl;
+    }
+}
+
+void print_sol_cuda(double* sol) {
+    double* tmp = new double[5];
+    cudaMemcpy(tmp, sol, 5*sizeof(double), cudaMemcpyDeviceToHost);
+    for(int i = 0; i < 5; i++) {
+        std::cout << tmp[i] << std::endl;
+    }
+}
 
 
 
@@ -437,14 +452,17 @@ int main(int argc, char ** argv) {
         long tmp;
         conjugate_gradients_serial(matrix, rhs, sol, size, max_iters, rel_error, &tmp);
         serial_execution_time += tmp;
-        memset(sol, 0, sizeof(double) * size);
+
     }
     for(int i = 0; i < parallel_trials; i++) {
         long tmp;
         conjugate_gradients(matrix_cuda, rhs_cuda, sol_cuda, size, max_iters, rel_error, &tmp);
         parallel_execution_time += tmp;
-        memset(sol, 0, sizeof(double) * size);
     }
+
+
+    print_sol(sol);
+    print_sol_cuda(sol_cuda);
 
     std::cout << "check" << std::endl;
     check_cuda("error");
