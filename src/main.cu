@@ -166,7 +166,7 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* out
         outArray[blockIdx.x] = 0.0;
     }
     for(unsigned int i = blockIdx.x; 2*blockSize*i < size; i+=gridSize) {
-        sArr[threadIdx.x] = (i*blockSize + threadIdx.x<size)?x[i*blockSize + threadIdx.x]*y[i*blockSize + threadIdx.x]:0.0 + ((i*blockSize*2 + threadIdx.x + blockSize<size)?x[i*blockSize*2 + threadIdx.x + blockSize]*y[i*blockSize*2 + threadIdx.x + blockSize]:0.0);
+        sArr[threadIdx.x] = (i*2*blockSize + threadIdx.x<size)?x[i*2*blockSize + threadIdx.x]*y[i*2*blockSize + threadIdx.x]:0.0 + ((i*blockSize*2 + threadIdx.x + blockSize<size)?x[i*blockSize*2 + threadIdx.x + blockSize]*y[i*blockSize*2 + threadIdx.x + blockSize]:0.0);
         for (unsigned int stride = blockSize/2; stride >= 1;
              stride = stride>>1)
         {
