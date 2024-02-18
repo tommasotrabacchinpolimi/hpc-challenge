@@ -136,7 +136,7 @@ __global__ void sumArray(const double* array, int size, double* result) {
     }
     sArr[threadIdx.x] = 0.0;
     for(unsigned int i = threadIdx.x; iter_n < size; i+=2*blockSize) {
-        sArr[threadIdx.x] = (i<size)?array[i]:0.0 + ((i + blockSize < size)?array[i + blockSize]:0.0);
+        sArr[threadIdx.x] = ((i<size)?array[i]:0.0) + ((i + blockSize < size)?array[i + blockSize]:0.0);
         for (unsigned int stride = blockSize/2; stride >= 1;
              stride = stride>>1)
         {
