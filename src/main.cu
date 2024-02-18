@@ -89,8 +89,8 @@ __device__ void row_column_mult(const double* A, unsigned int row, int size, con
         partial = 0.0;
     }
 
-    for(unsigned int i = threadIdx.x; iter_n < size; i+=blockSize) {
-        sArr[threadIdx.x] = (i<size)?A[row*size + i]*p[i]:0.0;
+    for(unsigned int i = threadIdx.x; iter_n < size; i+=2*blockSize) {
+        sArr[threadIdx.x] = (i<size)?A[row*size + i]*p[i]:0.0 + ((i + blockSize<size)?A[row*size + i + blockSize]*p[i + blockSize]:0.0);
         for (unsigned int stride = blockSize/2; stride >= 1;
              stride = stride>>1)
         {
@@ -99,7 +99,7 @@ __device__ void row_column_mult(const double* A, unsigned int row, int size, con
             if (threadIdx.x < stride)
                 sArr[threadIdx.x] += sArr[threadIdx.x+stride];
         }
-        iter_n += blockSize;
+        iter_n += 2*blockSize;
         __syncthreads();
         if(threadIdx.x == 0) {
             partial += sArr[0];
@@ -135,8 +135,8 @@ __global__ void sumArray(const double* array, int size, double* result) {
         partial = 0;
     }
     sArr[threadIdx.x] = 0.0;
-    for(unsigned int i = threadIdx.x; iter_n < size; i+=blockSize) {
-        sArr[threadIdx.x] = (i<size)?array[i]:0.0;
+    for(unsigned int i = threadIdx.x; iter_n < size; i+=2*blockSize) {
+        sArr[threadIdx.x] = (i<size)?array[i]:0.0 + ((i + blockSize < size)?array[i + blockSize]:0.0);
         for (unsigned int stride = blockSize/2; stride >= 1;
              stride = stride>>1)
         {
@@ -145,7 +145,7 @@ __global__ void sumArray(const double* array, int size, double* result) {
             if (threadIdx.x < stride)
                 sArr[threadIdx.x] += sArr[threadIdx.x+stride];
         }
-        iter_n += blockSize;
+        iter_n += 2*blockSize;
         __syncthreads();
         if(threadIdx.x == 0) {
             partial += sArr[0];
@@ -165,8 +165,8 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* out
     if(threadIdx.x == 0) {
         outArray[blockIdx.x] = 0.0;
     }
-    for(unsigned int i = blockIdx.x; blockSize*i < size; i+=gridSize) {
-        sArr[threadIdx.x] = (i*blockSize + threadIdx.x<size)?x[i*blockSize + threadIdx.x]*y[i*blockSize + threadIdx.x]:0.0;
+    for(unsigned int i = blockIdx.x; 2*blockSize*i < size; i+=gridSize) {
+        sArr[threadIdx.x] = (i*blockSize + threadIdx.x<size)?x[i*blockSize + threadIdx.x]*y[i*blockSize + threadIdx.x]:0.0 + ((i*blockSize*2 + threadIdx.x + blockSize<size)?x[i*blockSize*2 + threadIdx.x + blockSize]*y[i*blockSize*2 + threadIdx.x + blockSize]:0.0);
         for (unsigned int stride = blockSize/2; stride >= 1;
              stride = stride>>1)
         {
