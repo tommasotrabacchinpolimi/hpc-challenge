@@ -74,7 +74,7 @@ void gemv(double alpha, const double * A, const double * x, double beta, double 
 
 
 
-void conjugate_gradients_parallel(const double * A, const double * b, double * x, size_t size, int max_iters, double rel_error, int threads_number, long* execution_time) {
+void conjugate_gradients_parallel(const double *  A, const double * b, double * x, size_t size, int max_iters, double rel_error, int threads_number, long* execution_time) {
     double alpha, beta, bb, rr, rr_new;
     auto * r = new double[size];
     auto * p = new double[size];
@@ -97,9 +97,10 @@ void conjugate_gradients_parallel(const double * A, const double * b, double * x
     {
         for (num_iters = 1; num_iters <= max_iters; num_iters++) {
 
-            #pragma omp for nowait
+            #pragma omp for simd nowait
             for (size_t i = 0; i < size; i += 1) {
                 Ap[i] = 0.0;
+                #pragma omp simd
                 for (size_t j = 0; j < size; j++) {
                     Ap[i] += A[i * size + j] * p[j];
                 }
@@ -110,32 +111,30 @@ void conjugate_gradients_parallel(const double * A, const double * b, double * x
             #pragma omp single
             {
                 dot_result = 0.0;
+                rr_new = 0.0;
             }
 
-            #pragma omp for reduction(+:dot_result)
+
+            #pragma omp for simd reduction(+:dot_result)
             for (size_t i = 0; i < size; i++) {
                 dot_result += p[i] * Ap[i];
             }
             alpha = rr / dot_result;
 
 
-            #pragma omp for nowait
+            #pragma omp for simd nowait
             for(size_t i = 0; i < size; i++) {
                 x[i] = alpha * p[i] + x[i];
             }
 
 
-            #pragma omp for nowait
+            #pragma omp for simd nowait
             for(size_t i = 0; i < size; i++) {
                 r[i] = -alpha * Ap[i] + r[i];
             }
 
-            #pragma omp single
-            {
-                rr_new = 0.0;
-            }
 
-            #pragma omp for reduction(+:rr_new)
+            #pragma omp for simd reduction(+:rr_new)
             for (size_t i = 0; i < size; i++) {
                 rr_new += r[i] * r[i];
             }
@@ -150,7 +149,7 @@ void conjugate_gradients_parallel(const double * A, const double * b, double * x
                 }
                 break; }
 
-            #pragma omp for
+            #pragma omp for simd
             for(size_t i = 0; i < size; i++) {
                 p[i] =  r[i] + beta * p[i];
             }
@@ -171,6 +170,9 @@ void conjugate_gradients_parallel(const double * A, const double * b, double * x
         printf("Did not converge in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
     }
 }
+
+
+
 
 
 
@@ -195,6 +197,8 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     for(num_iters = 1; num_iters <= max_iters; num_iters++)
     {
         gemv(1.0, A, p, 0.0, Ap, size, size);
+        std::cout << std::endl;
+        std::cout << rr << std::endl;
         alpha = rr / dot(p, Ap, size);
         axpby(alpha, p, 1.0, x, size);
         axpby(-alpha, Ap, 1.0, r, size);
@@ -230,7 +234,7 @@ int main(int argc, char ** argv)
     printf("Usage: size max_iters rel_error\n");
     printf("\n");
 
-    int size = 5000;
+    int size = 5;
     int max_iters = 1000;
     double rel_error = 1e-9;
     int serial_trials = 1;
