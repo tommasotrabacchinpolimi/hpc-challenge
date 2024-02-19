@@ -78,6 +78,14 @@ void generate_rhs(size_t n, double value, double** rhs_out) {
     *rhs_out = rhs;
 }
 
+__device__ void warpReduce(volatile double* sdata, int tid) {
+    sdata[tid] += sdata[tid + 32];
+    sdata[tid] += sdata[tid + 16];
+    sdata[tid] += sdata[tid + 8];
+    sdata[tid] += sdata[tid + 4];
+    sdata[tid] += sdata[tid + 2];
+    sdata[tid] += sdata[tid + 1];
+}
 
 
 template<int blockSize>
@@ -91,13 +99,17 @@ __device__ void row_column_mult(const double* A, unsigned int row, int size, con
 
     for(unsigned int i = threadIdx.x; iter_n < size; i+=2*blockSize) {
         sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*p[i + blockSize]:0.0);
-        for (unsigned int stride = blockSize/2; stride >= 1;
+        for (unsigned int stride = blockSize/2; stride > 32;
              stride = stride>>1)
         {
 
             __syncthreads();
             if (threadIdx.x < stride)
                 sArr[threadIdx.x] += sArr[threadIdx.x+stride];
+        }
+        __syncthreads();
+        if(threadIdx.x < 32) {
+            warpReduce(sArr, threadIdx.x);
         }
         iter_n += 2*blockSize;
         __syncthreads();
@@ -137,7 +149,7 @@ __global__ void sumArray(const double* array, int size, double* result) {
     sArr[threadIdx.x] = 0.0;
     for(unsigned int i = threadIdx.x; iter_n < size; i+=2*blockSize) {
         sArr[threadIdx.x] = ((i<size)?array[i]:0.0) + ((i + blockSize < size)?array[i + blockSize]:0.0);
-        for (unsigned int stride = blockSize/2; stride >= 1;
+        for (unsigned int stride = blockSize/2; stride > 32;
              stride = stride>>1)
         {
 
@@ -145,6 +157,11 @@ __global__ void sumArray(const double* array, int size, double* result) {
             if (threadIdx.x < stride)
                 sArr[threadIdx.x] += sArr[threadIdx.x+stride];
         }
+        __syncthreads();
+        if(threadIdx.x < 32) {
+            warpReduce(sArr, threadIdx.x);
+        }
+
         iter_n += 2*blockSize;
         __syncthreads();
         if(threadIdx.x == 0) {
@@ -159,6 +176,9 @@ __global__ void sumArray(const double* array, int size, double* result) {
 }
 
 
+
+
+
 template<int gridSize, int blockSize>
 __global__ void dot_product_kernel(const double* x, const double* y, double* outArray, int size) {
     __shared__ double sArr[blockSize];
@@ -169,13 +189,17 @@ __global__ void dot_product_kernel(const double* x, const double* y, double* out
         sArr[threadIdx.x] = ((i*2*blockSize + threadIdx.x<size)?x[i*2*blockSize + threadIdx.x]*y[i*2*blockSize + threadIdx.x]:0.0) + ((i*blockSize*2 + threadIdx.x + blockSize<size)?x[i*blockSize*2 + threadIdx.x + blockSize]*y[i*blockSize*2 + threadIdx.x + blockSize]:0.0);
         //sArr[threadIdx.x] = (i*blockSize + threadIdx.x<size)?x[i*blockSize + threadIdx.x]*y[i*blockSize + threadIdx.x]:0.0;
 
-        for (unsigned int stride = blockSize/2; stride >= 1;
+        for (unsigned int stride = blockSize/2; stride > 32;
              stride = stride>>1)
         {
 
             __syncthreads();
             if (threadIdx.x < stride)
                 sArr[threadIdx.x] += sArr[threadIdx.x+stride];
+        }
+        __syncthreads();
+        if(threadIdx.x < 32) {
+            warpReduce(sArr, threadIdx.x);
         }
         __syncthreads();
         if(threadIdx.x == 0) {
