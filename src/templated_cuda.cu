@@ -126,6 +126,25 @@ __device__ void row_column_mult(const double* __restrict__ A, unsigned int row, 
 
 }
 
+template<int blockSize>
+__global__ void tiled_matrix_vector_mult(const double* __restrict__ A, const double* __restrict__ p, double* __restrict__ Ap, unsigned int size) {
+    __shared__ double sArr[blockSize];
+    double Ap_partial = 0;
+    const int tid = threadIdx.x + blockSize * blockIdx.x;
+    for(unsigned int k = 0; k < (size - 1 + blockSize)/blockSize; k++) {
+        sArr[threadIdx.x] = (k*blockSize + threadIdx.x < size) ? p[k*blockSize + threadIdx.x] : 0.0;
+        __syncthreads();
+        for(unsigned int e = 0; e < blockSize; e++) {
+            Ap_partial += A[tid + size * (k*blockSize + e)] * sArr[e];
+        }
+        __syncthreads();
+    }
+    if(tid < size) {
+        Ap[tid] = Ap_partial;
+    }
+}
+
+
 template<int gridSize, int blockSize>
 __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size) {
     for(unsigned int i = blockIdx.x; i < size; i+=gridSize) {
@@ -136,6 +155,7 @@ __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __res
 
 template<int gridSize, int blockSize>
 void matrix_vector_mult(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size, cudaStream_t stream) {
+    //tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
     matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
 }
 
