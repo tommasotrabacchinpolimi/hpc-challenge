@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #define GRID_SIZE 350
-#define BLOCK_SIZE 512
+#define BLOCK_SIZE 32
 
 
 void check_cuda(const std::string& msg) {
@@ -134,6 +134,7 @@ __global__ void tiled_matrix_vector_mult(const double* __restrict__ A, const dou
     for(unsigned int k = 0; k < (size - 1 + blockSize)/blockSize; k++) {
         sArr[threadIdx.x] = (k*blockSize + threadIdx.x < size) ? p[k*blockSize + threadIdx.x] : 0.0;
         __syncthreads();
+//#pragma unroll
         for(unsigned int e = 0; e < blockSize; e++) {
             Ap_partial += A[tid + size * (k*blockSize + e)] * sArr[e];
         }
