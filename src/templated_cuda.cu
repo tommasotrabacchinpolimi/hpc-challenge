@@ -3,7 +3,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <chrono>
-#define GRID_SIZE 200
+#define GRID_SIZE 512
 #define BLOCK_SIZE 1024
 
 
