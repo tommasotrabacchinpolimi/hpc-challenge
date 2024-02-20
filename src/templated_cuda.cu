@@ -3,8 +3,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <chrono>
-#define GRID_SIZE 200
-#define BLOCK_SIZE 1024
+#define GRID_SIZE 300
+#define BLOCK_SIZE 512
 
 
 void check_cuda(const std::string& msg) {
@@ -112,7 +112,6 @@ __device__ void row_column_mult(const double* __restrict__ A, unsigned int row, 
     if(threadIdx.x == 0) {
         partial = 0.0;
     }
-    int size_ = size + threadIdx.x;
     for(unsigned int i = threadIdx.x; i < size + threadIdx.x; i+=2*blockSize) {
         sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0);
         __syncthreads();
@@ -148,7 +147,6 @@ __global__ void sumArray(const double* __restrict__ array, int size, double* __r
     if(threadIdx.x == 0) {
         partial = 0;
     }
-    int size_ = size + threadIdx.x;
     for(unsigned int i = threadIdx.x; i < size + threadIdx.x; i+=2*blockSize) {
         sArr[threadIdx.x] = ((i<size)?array[i]:0.0) + ((i + blockSize < size)?array[i + blockSize]:0.0);
         __syncthreads();
