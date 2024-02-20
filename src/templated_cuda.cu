@@ -112,8 +112,8 @@ __device__ void row_column_mult(const double* __restrict__ A, unsigned int row, 
     if(threadIdx.x == 0) {
         partial = 0.0;
     }
-
-    for(unsigned int i = threadIdx.x; i - threadIdx.x < size; i+=2*blockSize) {
+    int size_ = size + threadIdx.x;
+    for(unsigned int i = threadIdx.x; i < size + threadIdx.x; i+=2*blockSize) {
         sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0);
         __syncthreads();
         reduce<blockSize>(sArr, threadIdx.x);
@@ -148,7 +148,8 @@ __global__ void sumArray(const double* __restrict__ array, int size, double* __r
     if(threadIdx.x == 0) {
         partial = 0;
     }
-    for(unsigned int i = threadIdx.x; i - threadIdx.x < size; i+=2*blockSize) {
+    int size_ = size + threadIdx.x;
+    for(unsigned int i = threadIdx.x; i < size + threadIdx.x; i+=2*blockSize) {
         sArr[threadIdx.x] = ((i<size)?array[i]:0.0) + ((i + blockSize < size)?array[i + blockSize]:0.0);
         __syncthreads();
         reduce<blockSize>(sArr, threadIdx.x);
@@ -168,7 +169,7 @@ __global__ void dot_product_kernel(const double* __restrict__ x, const double* _
     if(threadIdx.x == 0) {
         outArray[blockIdx.x] = 0.0;
     }
-    for(unsigned int i = blockIdx.x; blockSize*i < size; i+=gridSize) {
+    for(unsigned int i = blockIdx.x; 2*blockSize*i < size; i+=gridSize) {
         int tmp = i*2*blockSize + threadIdx.x;
         sArr[threadIdx.x] = ((tmp<size)?x[tmp]*y[tmp]:0.0) + ((tmp + blockSize<size)?x[tmp + blockSize]*y[tmp + blockSize]:0.0);
         __syncthreads();
