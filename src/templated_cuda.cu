@@ -3,8 +3,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <chrono>
-#define GRID_SIZE 256
-#define BLOCK_SIZE 1024
+#define GRID_SIZE 128
+#define BLOCK_SIZE 2048
 
 
 void check_cuda(const std::string& msg) {
@@ -120,7 +120,6 @@ __device__ void row_column_mult(const double* __restrict__ A, unsigned int row, 
         if(threadIdx.x == 0) {
             partial += sArr[0];
         }
-        __syncthreads();
     }
     if(threadIdx.x == 0) {
         Ap[row] = partial;
@@ -149,7 +148,6 @@ __global__ void sumArray(const double* __restrict__ array, int size, double* __r
     if(threadIdx.x == 0) {
         partial = 0;
     }
-    sArr[threadIdx.x] = 0.0;
     for(unsigned int i = threadIdx.x; i - threadIdx.x < size; i+=2*blockSize) {
         sArr[threadIdx.x] = ((i<size)?array[i]:0.0) + ((i + blockSize < size)?array[i + blockSize]:0.0);
         __syncthreads();
@@ -157,7 +155,6 @@ __global__ void sumArray(const double* __restrict__ array, int size, double* __r
         if(threadIdx.x == 0) {
             partial += sArr[0];
         }
-        __syncthreads();
 
     }
     if(threadIdx.x == 0) {
@@ -179,7 +176,6 @@ __global__ void dot_product_kernel(const double* __restrict__ x, const double* _
         if(threadIdx.x == 0) {
             outArray[blockIdx.x] += sArr[0];
         }
-        __syncthreads();
     }
 }
 
