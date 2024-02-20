@@ -296,6 +296,7 @@ void conjugate_gradients_serial(const double * A, const double * b, double * x, 
 }
 
 void conjugate_gradients(const double * A, const double * b, double * x, size_t size, int max_iters, double rel_error, long* execution_time) {
+    auto start = std::chrono::high_resolution_clock::now();
     double* r_cuda;
     double* p_cuda;
     double* Ap_cuda;
@@ -328,7 +329,7 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     cudaMemcpy(&bb_cpu, bb, sizeof(double), cudaMemcpyDeviceToHost);
     err = bb_cpu;
     cudaMemcpy(rr, bb, sizeof(double), cudaMemcpyDeviceToDevice);
-    auto start = std::chrono::high_resolution_clock::now();
+
     for(niters = 1; niters < max_iters; niters++) {
         matrix_vector_mult<GRID_SIZE, BLOCK_SIZE>(A, p_cuda, Ap_cuda, (int)size, stream1);
         dot_product<GRID_SIZE, BLOCK_SIZE>(p_cuda, Ap_cuda, dot_product_out_array,(int)size, alpha, stream1);
@@ -342,7 +343,6 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
         if(std::sqrt(err / bb_cpu) < rel_error) { break; }
         xpby<GRID_SIZE, BLOCK_SIZE>(r_cuda, p_cuda, beta,  (int)size, stream1);
     }
-    auto stop = std::chrono::high_resolution_clock::now();
     if(niters < max_iters)
     {
         printf("Converged in %d iterations, relative error is %e\n", niters, std::sqrt(err / bb_cpu));
@@ -351,7 +351,6 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     {
         printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(err / bb_cpu));
     }
-    *execution_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
     cudaFree(r_cuda);
     cudaFree(p_cuda);
     cudaFree(Ap_cuda);
@@ -361,6 +360,9 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     cudaFree(bb);
     cudaFree(rr);
     cudaFree(rr_new);
+    auto stop = std::chrono::high_resolution_clock::now();
+    *execution_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
+
 }
 
 void print_sol(double* sol) {
