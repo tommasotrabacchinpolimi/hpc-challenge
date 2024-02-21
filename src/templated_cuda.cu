@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #define GRID_SIZE 1000
-#define BLOCK_SIZE 512
+#define BLOCK_SIZE 64
 #define WARP_SIZE 32
 
 
@@ -99,7 +99,7 @@ __device__ void reduce_ws(double* __restrict__ data, float* __restrict__ out) {
     __syncthreads();
 
     if (warpID == 0){
-        val = (tid < blockDim.x/WARP_SIZE)?sdata[lane]:0;
+        val = (tid < blockSize/WARP_SIZE)?sdata[lane]:0;
         for (int offset = WARP_SIZE/2; offset > 0; offset >>= 1) {
             val += __shfl_down_sync(mask, val, offset);
         }
@@ -145,7 +145,7 @@ __device__ void row_column_mult_ws(const double* __restrict__ A, unsigned int ro
     }
     for(unsigned int i = threadIdx.x; i < size + threadIdx.x; i+=2*blockSize) {
         //sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0);
-        //sArr[threadIdx.x] = fma(((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0), )
+
         if(i < size && i + blockSize < size) {
             sArr[threadIdx.x] = fma(A[row*size + i],p[i], A[row*size + i + blockSize] * p[i + blockSize]);
         } else if(i < size){
@@ -153,6 +153,7 @@ __device__ void row_column_mult_ws(const double* __restrict__ A, unsigned int ro
         } else {
             sArr[threadIdx.x] = 0.0;
         }
+
         __syncthreads();
         reduce_ws<blockSize>(sArr, &partial);
     }
@@ -215,9 +216,9 @@ __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __res
 
 template<int gridSize, int blockSize>
 void matrix_vector_mult(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size, cudaStream_t stream) {
-    //tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
+    tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
     //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
-    matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
+    //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
 }
 
 
