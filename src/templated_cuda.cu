@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #define GRID_SIZE 350
-#define BLOCK_SIZE 64
+#define BLOCK_SIZE 1024
 
 
 void check_cuda(const std::string& msg) {
