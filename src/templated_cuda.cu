@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #define GRID_SIZE 1000
-#define BLOCK_SIZE 64
+#define BLOCK_SIZE 512
 #define WARP_SIZE 32
 
 
@@ -454,9 +454,9 @@ void print_sol(double* sol) {
 }
 
 void print_sol_cuda(double* sol) {
-    double* tmp = new double[5];
-    cudaMemcpy(tmp, sol, 5*sizeof(double), cudaMemcpyDeviceToHost);
-    for(int i = 0; i < 5; i++) {
+    double* tmp = new double[50];
+    cudaMemcpy(tmp, sol, 50*sizeof(double), cudaMemcpyDeviceToHost);
+    for(int i = 0; i < 50; i++) {
         std::cout << tmp[i] << std::endl;
     }
 }
@@ -465,7 +465,7 @@ void print_sol_cuda(double* sol) {
 
 int main(int argc, char ** argv) {
 
-    int size = 2000;
+    int size = 50;
     int max_iters = 5000;
     double rel_error = 1e-9;
     int serial_trials = 1;
@@ -498,7 +498,7 @@ int main(int argc, char ** argv) {
     double* p_cuda;
     double* Ap_cuda;
     generate_matrix(size, &matrix);
-    generate_rhs(size, 2.0, &rhs);
+    generate_rhs(size, 1.0, &rhs);
     auto* sol = new double[size];
     double* sol_cuda;
 
