@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #define GRID_SIZE 350
-#define BLOCK_SIZE 1024
+#define BLOCK_SIZE 64
 
 
 void check_cuda(const std::string& msg) {
@@ -200,7 +200,7 @@ template<int gridSize, int blockSize>
 __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size) {
     for(unsigned int i = blockIdx.x; i < size; i+=gridSize) {
         //row_column_mult<blockSize>(A,i,size,p,Ap);
-        row_column_mult_ws<blockSize>(A,i,size,p,Ap);
+        //row_column_mult_ws<blockSize>(A,i,size,p,Ap);
     }
 
 }
