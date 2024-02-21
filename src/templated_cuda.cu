@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #define GRID_SIZE 350
-#define BLOCK_SIZE 512
+#define BLOCK_SIZE 1024
 
 
 void check_cuda(const std::string& msg) {
@@ -144,7 +144,15 @@ __device__ void row_column_mult_ws(const double* __restrict__ A, unsigned int ro
         partial = 0.0;
     }
     for(unsigned int i = threadIdx.x; i < size + threadIdx.x; i+=2*blockSize) {
-        sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0);
+        //sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0);
+        //sArr[threadIdx.x] = fma(((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0), )
+        if(i < size && i + blockSize < size) {
+            sArr[threadIdx.x] = fma(A[row*size + i],p[i], A[row*size + i + blockSize] * p[i + blockSize]);
+        } else if(i < size){
+            sArr[threadIdx.x] = A[row*size + i]*p[i];
+        } else {
+            sArr[threadIdx.x] = 0.0;
+        }
         __syncthreads();
         reduce_ws<blockSize>(sArr, &partial);
     }
