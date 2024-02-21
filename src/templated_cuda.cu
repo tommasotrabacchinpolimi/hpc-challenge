@@ -3,8 +3,9 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <chrono>
-#define GRID_SIZE 350
-#define BLOCK_SIZE 1024
+#define GRID_SIZE 1000
+#define BLOCK_SIZE 512
+#define WARP_SIZE 32
 
 
 void check_cuda(const std::string& msg) {
@@ -81,16 +82,15 @@ void generate_rhs(size_t n, double value, double** rhs_out) {
 
 
 template<int blockSize>
-__device__ void reduce_ws(double* data, float* out) {
-    __shared__ float sdata[32];
+__device__ void reduce_ws(double* __restrict__ data, float* __restrict__ out) {
+    __shared__ float sdata[WARP_SIZE];
     int tid = threadIdx.x;
-    int idx = threadIdx.x+blockDim.x*blockIdx.x;
-    float val = 0.0f;
+    float val;
     unsigned mask = 0xFFFFFFFFU;
-    int lane = threadIdx.x % warpSize;
-    int warpID = threadIdx.x / warpSize;
+    int lane = threadIdx.x % WARP_SIZE;
+    int warpID = threadIdx.x / WARP_SIZE;
     val = data[tid];
-    for (int offset = warpSize/2; offset > 0; offset >>= 1) {
+    for (int offset = WARP_SIZE/2; offset > 0; offset >>= 1) {
         val += __shfl_down_sync(mask, val, offset);
     }
     if (lane == 0){
@@ -99,8 +99,8 @@ __device__ void reduce_ws(double* data, float* out) {
     __syncthreads();
 
     if (warpID == 0){
-        val = (tid < blockDim.x/warpSize)?sdata[lane]:0;
-        for (int offset = warpSize/2; offset > 0; offset >>= 1) {
+        val = (tid < blockDim.x/WARP_SIZE)?sdata[lane]:0;
+        for (int offset = WARP_SIZE/2; offset > 0; offset >>= 1) {
             val += __shfl_down_sync(mask, val, offset);
         }
 
