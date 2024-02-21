@@ -80,6 +80,37 @@ void generate_rhs(size_t n, double value, double** rhs_out) {
 }
 
 
+template<int blockSize>
+__device__ void reduce_ws(double* data, float* out) {
+    __shared__ float sdata[32];
+    int tid = threadIdx.x;
+    int idx = threadIdx.x+blockDim.x*blockIdx.x;
+    float val = 0.0f;
+    unsigned mask = 0xFFFFFFFFU;
+    int lane = threadIdx.x % warpSize;
+    int warpID = threadIdx.x / warpSize;
+    val = data[tid];
+    for (int offset = warpSize/2; offset > 0; offset >>= 1) {
+        val += __shfl_down_sync(mask, val, offset);
+    }
+    if (lane == 0){
+        sdata[warpID] = val;
+    }
+    __syncthreads();
+
+    if (warpID == 0){
+        val = (tid < blockDim.x/warpSize)?sdata[lane]:0;
+        for (int offset = warpSize/2; offset > 0; offset >>= 1) {
+            val += __shfl_down_sync(mask, val, offset);
+        }
+
+        if (tid == 0) {
+            atomicAdd(out, val);
+        }
+    }
+}
+
+
 
 template<int blockSize>
 __device__ void warpReduce(volatile double* sdata, int tid) {
@@ -106,6 +137,25 @@ __device__ void reduce(double* sdata, int tid) {
 
 
 template<int blockSize>
+__device__ void row_column_mult_ws(const double* __restrict__ A, unsigned int row, int size, const double* __restrict__ p, double* __restrict__ Ap) {
+    __shared__ double sArr[blockSize];
+    __shared__ float partial;
+    if(threadIdx.x == 0) {
+        partial = 0.0;
+    }
+    for(unsigned int i = threadIdx.x; i < size + threadIdx.x; i+=2*blockSize) {
+        sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0);
+        __syncthreads();
+        reduce_ws<blockSize>(sArr, &partial);
+    }
+    if(threadIdx.x == 0) {
+        Ap[row] = partial;
+    }
+
+}
+
+
+template<int blockSize>
 __device__ void row_column_mult(const double* __restrict__ A, unsigned int row, int size, const double* __restrict__ p, double* __restrict__ Ap) {
     __shared__ double sArr[blockSize];
     __shared__ double partial;
@@ -127,7 +177,7 @@ __device__ void row_column_mult(const double* __restrict__ A, unsigned int row, 
 }
 
 template<int blockSize>
-__global__ void tiled_matrix_vector_mult(const double* __restrict__ A, const double* __restrict__ p, double* __restrict__ Ap, unsigned int size) {
+__global__ void tiled_matrix_vector_mult(const double* __restrict__ A, const double* __restrict__ p, double* __restrict__ Ap, const unsigned int size) {
     __shared__ double sArr[blockSize];
     double Ap_partial = 0;
     const int tid = threadIdx.x + blockSize * blockIdx.x;
@@ -149,15 +199,17 @@ __global__ void tiled_matrix_vector_mult(const double* __restrict__ A, const dou
 template<int gridSize, int blockSize>
 __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size) {
     for(unsigned int i = blockIdx.x; i < size; i+=gridSize) {
-        row_column_mult<blockSize>(A,i,size,p,Ap);
+        //row_column_mult<blockSize>(A,i,size,p,Ap);
+        row_column_mult_ws<blockSize>(A,i,size,p,Ap);
     }
 
 }
 
 template<int gridSize, int blockSize>
 void matrix_vector_mult(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size, cudaStream_t stream) {
-    tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
+    //tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
     //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
+    matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
 }
 
 
