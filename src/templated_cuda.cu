@@ -193,9 +193,8 @@ __global__ void tiled_matrix_vector_mult(const double* __restrict__ A, const dou
     for(unsigned int k = 0; k < (size - 1 + blockSize)/blockSize; k++) {
         sArr[threadIdx.x] = (k*blockSize + threadIdx.x < size) ? p[k*blockSize + threadIdx.x] : 0.0;
         __syncthreads();
-//#pragma unroll
         for(unsigned int e = 0; e < blockSize; e++) {
-            Ap_partial += A[tid + size * (k*blockSize + e)] * sArr[e];
+            Ap_partial += (tid + size * (k*blockSize + e) < size*size)?(A[tid + size * (k*blockSize + e)] * sArr[e]):0.0;
         }
         __syncthreads();
     }
@@ -414,6 +413,7 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
 
     for(niters = 1; niters < max_iters; niters++) {
         matrix_vector_mult<GRID_SIZE, BLOCK_SIZE>(A, p_cuda, Ap_cuda, (int)size, stream1);
+        check_cuda("error");
         dot_product<GRID_SIZE, BLOCK_SIZE>(p_cuda, Ap_cuda, dot_product_out_array,(int)size, alpha, stream1);
         divide<<<1,1, 0, stream1>>>(rr,alpha, alpha);
         axpby<GRID_SIZE, BLOCK_SIZE>(alpha, p_cuda, x, (int)size, stream1);
@@ -465,10 +465,10 @@ void print_sol_cuda(double* sol) {
 
 int main(int argc, char ** argv) {
 
-    int size = 50;
+    int size = 5000;
     int max_iters = 5000;
     double rel_error = 1e-9;
-    int serial_trials = 1;
+    int serial_trials = 0;
     int parallel_trials = 1;
     if(argc > 1) size = atoi(argv[1]);
     if(argc > 2) max_iters = atoi(argv[2]);
