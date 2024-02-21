@@ -454,9 +454,9 @@ void print_sol(double* sol) {
 }
 
 void print_sol_cuda(double* sol) {
-    double* tmp = new double[50];
-    cudaMemcpy(tmp, sol, 50*sizeof(double), cudaMemcpyDeviceToHost);
-    for(int i = 0; i < 50; i++) {
+    double* tmp = new double[5];
+    cudaMemcpy(tmp, sol, 5*sizeof(double), cudaMemcpyDeviceToHost);
+    for(int i = 0; i < 5; i++) {
         std::cout << tmp[i] << std::endl;
     }
 }
