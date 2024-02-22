@@ -114,11 +114,12 @@ namespace luca {
         cuda_err_check(err, __FILE__, __LINE__);
     }
 
+    template<int ncols>
     __global__ void gemv_tiled_kernel(const double *a, const double *x, double *y, int m, int n) {
         extern __shared__ double work[];
         int global_id_x = blockIdx.x * blockDim.x + threadIdx.x;
         int global_id_y = blockIdx.y * blockDim.y + threadIdx.y;
-        int ncols = n / gridDim.x;
+        //int ncols = n / gridDim.x;
         int col0 = ncols * global_id_x; // first value to load
         for (int k = 0; k < ncols; k += blockDim.y) {
             int col = k + threadIdx.y;
@@ -129,6 +130,7 @@ namespace luca {
         if (global_id_y >= m) return;
 
         double sum = 0;
+#pragma unroll
         for (int k = 0; k < ncols; k++) {
             sum += a[global_id_y + m * (col0 + k)] * work[k];
         }
@@ -170,7 +172,7 @@ namespace luca {
         cuda_err_check(err, __FILE__, __LINE__);
 
         // Launch the kernel
-        gemv_tiled_kernel<<<gridDim, blockDim, sharedMemSize>>>(A, x, y_partial, num_rows, num_cols);
+        gemv_tiled_kernel<1000><<<gridDim, blockDim, sharedMemSize>>>(A, x, y_partial, num_rows, num_cols);
         //err = cudaDeviceSynchronize();
         cuda_err_check(err, __FILE__, __LINE__);
         err = cudaGetLastError();
