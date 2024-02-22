@@ -115,6 +115,28 @@ namespace luca {
     }
 
     template<int ncols>
+    __global__ void gemv_tiled_kernel_improved(const double *a, const double *x, double *y, int m, int n) {
+        extern __shared__ double work[];
+        int global_id_x = blockIdx.x * blockDim.x + threadIdx.x;
+        int global_id_y = blockIdx.y * blockDim.y + threadIdx.y;
+        int begin = blockIdx.x * ncols;
+        int end = (blockIdx.x + 1) * ncols;
+        for(int i = 0; i < ncols; i++) {
+            work[i] = x[begin + i];
+        }
+        __syncthreads();
+        if(global_id_y >= m) {
+            return;
+        }
+        double sum = 0;
+
+        for(int i = 0; i < ncols; i++) {
+            sum += a[global_id_y][begin + i]
+        }
+    }
+
+
+    template<int ncols>
     __global__ void gemv_tiled_kernel(const double *a, const double *x, double *y, int m, int n) {
         extern __shared__ double work[];
         int global_id_x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -358,7 +380,7 @@ __device__ void row_column_mult_ws(const double* __restrict__ A, unsigned int ro
         //sArr[threadIdx.x] = ((i<size)?A[row*size + i]*p[i]:0.0) + ((i + blockSize<size)?A[row*size + i + blockSize]*(p[i + blockSize]):0.0);
 
         if(i < size && i + blockSize < size) {
-            sArr[threadIdx.x] = fma(A[row*size + i],p[i], A[row*size + i + blockSize] * p[i + blockSize]);
+            sArr[threadIdx.x] = fma(A[row*size + i],p[i], A[row*size + i + blockSize] * __ldg(&p[i + blockSize]));
         } else if(i < size){
             sArr[threadIdx.x] = A[row*size + i]*p[i];
         } else {
@@ -424,12 +446,12 @@ __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __res
 
 }
 
-/*template<int gridSize, int blockSize>
+template<int gridSize, int blockSize>
 void matrix_vector_mult(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size, cudaStream_t stream) {
     //tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
     matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
     //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
-}*/
+}
 
 
 template<int gridSize, int blockSize>
@@ -652,9 +674,9 @@ void conjugate_gradients(const double * A_cpu, const double * b_cpu, double * x_
 
     //std::cout << "starting cuda" << std::endl;
     for(niters = 1; niters < max_iters; niters++) {
-        //matrix_vector_mult_cublas<GRID_SIZE, BLOCK_SIZE>(handle, A, p_cuda, Ap_cuda, (int)size);
+        matrix_vector_mult<GRID_SIZE, BLOCK_SIZE>(A, p_cuda, Ap_cuda, (int)size, stream1);
         //std::cout << "finished cuda" << std::endl;
-        luca::gemv_tiled_kernel_launcher(A, p_cuda, Ap_cuda, size, size);
+        //luca::gemv_tiled_kernel_launcher(A, p_cuda, Ap_cuda, size, size);
         dot_product<GRID_SIZE, BLOCK_SIZE>(p_cuda, Ap_cuda, dot_product_out_array,(int)size, alpha, stream1);
         divide<<<1,1, 0, stream1>>>(rr,alpha, alpha);
         axpby<GRID_SIZE, BLOCK_SIZE>(alpha, p_cuda, x, (int)size, stream1);
