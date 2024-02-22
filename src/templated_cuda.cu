@@ -114,26 +114,6 @@ namespace luca {
         cuda_err_check(err, __FILE__, __LINE__);
     }
 
-    template<int ncols>
-    __global__ void gemv_tiled_kernel_improved(const double *a, const double *x, double *y, int m, int n) {
-        extern __shared__ double work[];
-        int global_id_x = blockIdx.x * blockDim.x + threadIdx.x;
-        int global_id_y = blockIdx.y * blockDim.y + threadIdx.y;
-        int begin = blockIdx.x * ncols;
-        int end = (blockIdx.x + 1) * ncols;
-        for(int i = 0; i < ncols; i++) {
-            work[i] = x[begin + i];
-        }
-        __syncthreads();
-        if(global_id_y >= m) {
-            return;
-        }
-        double sum = 0;
-
-        for(int i = 0; i < ncols; i++) {
-            sum += a[global_id_y][begin + i]
-        }
-    }
 
 
     template<int ncols>
