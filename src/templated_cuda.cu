@@ -654,9 +654,9 @@ void conjugate_gradients(const double * A_cpu, const double * b_cpu, double * x_
 
     //std::cout << "starting cuda" << std::endl;
     for(niters = 1; niters < max_iters; niters++) {
-        //matrix_vector_mult<GRID_SIZE, BLOCK_SIZE>(A, p_cuda, Ap_cuda, (int)size, stream1);
+        matrix_vector_mult_cublas<GRID_SIZE, BLOCK_SIZE>(handle, A, p_cuda, Ap_cuda, (int)size);
         //std::cout << "finished cuda" << std::endl;
-        luca::gemv_tiled_kernel_launcher(A, p_cuda, Ap_cuda, size, size);
+        //luca::gemv_tiled_kernel_launcher(A, p_cuda, Ap_cuda, size, size);
         dot_product<GRID_SIZE, BLOCK_SIZE>(p_cuda, Ap_cuda, dot_product_out_array,(int)size, alpha, stream1);
         divide<<<1,1, 0, stream1>>>(rr,alpha, alpha);
         axpby<GRID_SIZE, BLOCK_SIZE>(alpha, p_cuda, x, (int)size, stream1);
