@@ -2,10 +2,23 @@
 #include <iostream>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <cublas_v2.h>
 #include <chrono>
 #define GRID_SIZE 1000
 #define BLOCK_SIZE 512
 #define WARP_SIZE 32
+
+#define cublasCheckErrors(fn) \
+    do { \
+        cublasStatus_t __err = fn; \
+        if (__err != CUBLAS_STATUS_SUCCESS) { \
+            printf("Fatal cublas error: %d (at %s:%d)\n", \
+                (int)(__err), \
+                __FILE__, __LINE__); \
+            printf("*** FAILED - ABORTING\n"); \
+            exit(1); \
+        } \
+    } while (0)
 
 
 void check_cuda(const std::string& msg) {
@@ -15,6 +28,7 @@ void check_cuda(const std::string& msg) {
     if(err != cudaSuccess) {
         std::cout << "cuda error: " << msg << std::endl;
         std::cout << "description: " << err << std::endl;
+        exit(1);
     }
 }
 
@@ -213,13 +227,24 @@ __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __res
 
 }
 
-template<int gridSize, int blockSize>
+/*template<int gridSize, int blockSize>
 void matrix_vector_mult(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size, cudaStream_t stream) {
     //tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
     matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
     //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
-}
+}*/
 
+
+template<int gridSize, int blockSize>
+void matrix_vector_mult_cublas(cublasHandle_t  handle, const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size) {
+    //tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
+    //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
+    //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
+    double alpha = 1.0f;
+    double beta = 0;
+    cublasCheckErrors(cublasDgemv(handle, CUBLAS_OP_N, size, size, &alpha, A, size, p, 1, &beta, Ap, 1));
+    check_cuda("cublas error");
+}
 
 template<int blockSize>
 __global__ void sumArray(const double* __restrict__ array, int size, double* __restrict__ result) {
@@ -393,8 +418,12 @@ void conjugate_gradients(const double * A_cpu, const double * b_cpu, double * x_
     double* A;
     double* b;
     double* x;
+    cublasHandle_t handle;
+    cublasCheckErrors(cublasCreate(&handle));
+    cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_HOST);
     cudaMalloc(&A, sizeof(double) * size*size);
     cudaMalloc(&b, sizeof(double) * size);
+
     cudaMalloc(&x, sizeof(double) * size);
     cudaMemcpy(A,A_cpu, sizeof(double)*size*size, cudaMemcpyHostToDevice);
     cudaMemcpy(b,b_cpu, sizeof(double)*size, cudaMemcpyHostToDevice);
@@ -423,8 +452,11 @@ void conjugate_gradients(const double * A_cpu, const double * b_cpu, double * x_
     err = bb_cpu;
     cudaMemcpy(rr, bb, sizeof(double), cudaMemcpyDeviceToDevice);
 
+    std::cout << "starting cuda" << std::endl;
     for(niters = 1; niters < max_iters; niters++) {
-        matrix_vector_mult<GRID_SIZE, BLOCK_SIZE>(A, p_cuda, Ap_cuda, (int)size, stream1);
+        matrix_vector_mult_cublas<GRID_SIZE, BLOCK_SIZE>(handle, A, p_cuda, Ap_cuda, (int)size);
+        std::cout << "finished cuda" << std::endl;
+
         dot_product<GRID_SIZE, BLOCK_SIZE>(p_cuda, Ap_cuda, dot_product_out_array,(int)size, alpha, stream1);
         divide<<<1,1, 0, stream1>>>(rr,alpha, alpha);
         axpby<GRID_SIZE, BLOCK_SIZE>(alpha, p_cuda, x, (int)size, stream1);
@@ -479,10 +511,10 @@ void print_sol_cuda(double* sol) {
 
 int main(int argc, char ** argv) {
 
-    int size = 5000;
+    int size = 500;
     int max_iters = 5000;
     double rel_error = 1e-9;
-    int serial_trials = 0;
+    int serial_trials = 1;
     int parallel_trials = 1;
     if(argc > 1) size = atoi(argv[1]);
     if(argc > 2) max_iters = atoi(argv[2]);
@@ -517,6 +549,7 @@ int main(int argc, char ** argv) {
         sol[i] = 1.0;
     }
 
+
     cudaMalloc(&max_iters_cuda, sizeof(int));
     cudaMalloc(&size_cuda, sizeof(int));
     cudaMalloc(&tol_cuda, sizeof(double));
@@ -530,6 +563,9 @@ int main(int argc, char ** argv) {
     cudaMemcpy(p_cuda, rhs, size*sizeof(double), cudaMemcpyHostToDevice);
 
 
+
+
+    cudaDeviceSynchronize();
     for(int i = 0; i < serial_trials; i++) {
         long tmp;
         conjugate_gradients_serial(matrix, rhs, sol, size, max_iters, rel_error, &tmp);

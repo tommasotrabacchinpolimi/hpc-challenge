@@ -11,12 +11,17 @@ set_target_properties(main PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lcublas
+")
+
 
 target_compile_options(main_cuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
         -O3
+        -lcublas
         >)
 
 target_compile_options(templated_cuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
         -O3
+        -lcublas
         >)
 
