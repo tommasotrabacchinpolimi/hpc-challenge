@@ -215,8 +215,8 @@ __global__ void matrix_vector_kernel(const double* __restrict__ A, double* __res
 
 template<int gridSize, int blockSize>
 void matrix_vector_mult(const double* __restrict__ A, double* __restrict__ p, double* __restrict__ Ap, int size, cudaStream_t stream) {
-    tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
-    //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
+    //tiled_matrix_vector_mult<blockSize><<<(size  + blockSize)/blockSize, blockSize>>>(A, p, Ap, size);
+    matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
     //matrix_vector_kernel<gridSize, blockSize><<<gridSize, blockSize, 0, stream>>>(A, p, Ap, size);
 }
 
@@ -331,6 +331,7 @@ void xpby(const double * __restrict__ x, double * __restrict__ y, const double* 
 
 void conjugate_gradients_serial(const double * A, const double * b, double * x, size_t size, int max_iters, double rel_error, long* execution_time)
 {
+
     double alpha, beta, bb, rr, rr_new;
     double * r = new double[size];
     double * p = new double[size];
@@ -376,7 +377,7 @@ void conjugate_gradients_serial(const double * A, const double * b, double * x, 
     }
 }
 
-void conjugate_gradients(const double * A, const double * b, double * x, size_t size, int max_iters, double rel_error, long* execution_time) {
+void conjugate_gradients(const double * A_cpu, const double * b_cpu, double * x_cpu, size_t size, int max_iters, double rel_error, long* execution_time) {
     auto start = std::chrono::high_resolution_clock::now();
     double* r_cuda;
     double* p_cuda;
@@ -389,9 +390,20 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     double* rr_new;
     double* dot_product_out_array;
     double err;
+    double* A;
+    double* b;
+    double* x;
+    cudaMalloc(&A, sizeof(double) * size*size);
+    cudaMalloc(&b, sizeof(double) * size);
+    cudaMalloc(&x, sizeof(double) * size);
+    cudaMemcpy(A,A_cpu, sizeof(double)*size*size, cudaMemcpyHostToDevice);
+    cudaMemcpy(b,b_cpu, sizeof(double)*size, cudaMemcpyHostToDevice);
+    cudaMemcpy(x,x_cpu, sizeof(double)*size, cudaMemcpyHostToDevice);
+
     cudaMalloc(&r_cuda, size*sizeof(double));
     cudaMalloc(&p_cuda, size*sizeof(double));
     cudaMalloc(&Ap_cuda, size*sizeof(double));
+
     cudaMalloc(&dot_product_out_array, sizeof(double)*GRID_SIZE);
     cudaMalloc(&alpha, sizeof(double));
     cudaMalloc(&beta, sizeof(double));
@@ -432,6 +444,9 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     {
         printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(err / bb_cpu));
     }
+    cudaFree(A);
+    cudaFree(b);
+    cudaFree(x);
     cudaFree(r_cuda);
     cudaFree(p_cuda);
     cudaFree(Ap_cuda);
@@ -490,33 +505,24 @@ int main(int argc, char ** argv) {
     int* max_iters_cuda;
     double* tol_cuda;
     double* matrix;
-    double* matrix_cuda;
     double* rhs;
-    double* rhs_cuda;
     double* r_cuda;
     double* p_cuda;
     double* Ap_cuda;
     generate_matrix(size, &matrix);
     generate_rhs(size, 1.0, &rhs);
     auto* sol = new double[size];
-    double* sol_cuda;
 
     for(int i = 0; i < size; i++) {
         sol[i] = 1.0;
     }
 
-    cudaMalloc(&matrix_cuda, size*size*sizeof(double));
-    cudaMalloc(&rhs_cuda, size*sizeof(double));
-    cudaMalloc(&sol_cuda, size*sizeof(double));
     cudaMalloc(&max_iters_cuda, sizeof(int));
     cudaMalloc(&size_cuda, sizeof(int));
     cudaMalloc(&tol_cuda, sizeof(double));
     cudaMalloc(&r_cuda, size*sizeof(double));
     cudaMalloc(&p_cuda, size*sizeof(double));
     cudaMalloc(&Ap_cuda, size*sizeof(double));
-    cudaMemcpy(matrix_cuda, matrix, size*size*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(rhs_cuda, rhs, size*sizeof(double), cudaMemcpyHostToDevice);
-    cudaMemcpy(sol_cuda, sol, size*sizeof(double), cudaMemcpyHostToDevice);
     cudaMemcpy(max_iters_cuda, &max_iters, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(size_cuda, &size, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(tol_cuda, &rel_error, sizeof(double), cudaMemcpyHostToDevice);
@@ -532,13 +538,11 @@ int main(int argc, char ** argv) {
     }
     for(int i = 0; i < parallel_trials; i++) {
         long tmp;
-        conjugate_gradients(matrix_cuda, rhs_cuda, sol_cuda, size, max_iters, rel_error, &tmp);
+        conjugate_gradients(matrix, rhs, sol, size, max_iters, rel_error, &tmp);
         parallel_execution_time += tmp;
     }
 
 
-    print_sol(sol);
-    print_sol_cuda(sol_cuda);
 
     std::cout << "check" << std::endl;
     check_cuda("error");
