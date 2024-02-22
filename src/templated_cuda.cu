@@ -452,10 +452,10 @@ void conjugate_gradients(const double * A_cpu, const double * b_cpu, double * x_
     err = bb_cpu;
     cudaMemcpy(rr, bb, sizeof(double), cudaMemcpyDeviceToDevice);
 
-    std::cout << "starting cuda" << std::endl;
+    //std::cout << "starting cuda" << std::endl;
     for(niters = 1; niters < max_iters; niters++) {
         matrix_vector_mult_cublas<GRID_SIZE, BLOCK_SIZE>(handle, A, p_cuda, Ap_cuda, (int)size);
-        std::cout << "finished cuda" << std::endl;
+        //std::cout << "finished cuda" << std::endl;
 
         dot_product<GRID_SIZE, BLOCK_SIZE>(p_cuda, Ap_cuda, dot_product_out_array,(int)size, alpha, stream1);
         divide<<<1,1, 0, stream1>>>(rr,alpha, alpha);
