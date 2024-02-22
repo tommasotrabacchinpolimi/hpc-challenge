@@ -421,6 +421,7 @@ void conjugate_gradients(const double * A_cpu, const double * b_cpu, double * x_
     cublasHandle_t handle;
     cublasCheckErrors(cublasCreate(&handle));
     cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_HOST);
+    cublasSetMathMode(handle, CUBLAS_TENSOR_OP_MATH);
     cudaMalloc(&A, sizeof(double) * size*size);
     cudaMalloc(&b, sizeof(double) * size);
 
