@@ -117,7 +117,7 @@ namespace luca {
 
 
     template<int ncols>
-    __global__ void gemv_tiled_kernel(const double *a, const double *x, double *y, int m, int n) {
+    __global__ void gemv_tiled_kernel(const double * __restrict__ a, const double * __restrict__ x, double * __restrict__ y, int m, int n) {
         extern __shared__ double work[];
         int global_id_x = blockIdx.x * blockDim.x + threadIdx.x;
         int global_id_y = blockIdx.y * blockDim.y + threadIdx.y;
