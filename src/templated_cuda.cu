@@ -565,7 +565,6 @@ int main(int argc, char ** argv) {
 
 
 
-    cudaDeviceSynchronize();
     for(int i = 0; i < serial_trials; i++) {
         long tmp;
         conjugate_gradients_serial(matrix, rhs, sol, size, max_iters, rel_error, &tmp);
