@@ -1,7 +1,7 @@
 #define ROWS_GROUP_SIZE 64
 #define RHS_GROUP_SIZE 64
 #define COLUMNS_GROUP_SIZE 64
-#include <CL/opencl.h>
+#include "../../include/CL/opencl.h"
 
 __kernel void gemv(__global const cl_double * a, __global const cl_double * x, __global cl_double * y, cl_uint ncols, cl_uint nrows)
 {
