@@ -3,7 +3,7 @@
 #SBATCH --nodes=1                          # number of nodes
 #SBATCH --ntasks=1                         # number of tasks
 #SBATCH --ntasks-per-node=1                # number of tasks per node
-#SBATCH --time=03:00:00                    # time (HH:MM:SS)
+#SBATCH --time=05:00:00                    # time (HH:MM:SS)
 #SBATCH --partition=cpu                    # partition
 #SBATCH --account=p200301                  # project account
 #SBATCH --cpus-per-task=1                  # CORES per task
