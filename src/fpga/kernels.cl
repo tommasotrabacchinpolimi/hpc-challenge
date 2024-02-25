@@ -13,10 +13,10 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
     for(num_iters = 1; num_iters <= max_iters; num_iters++) {
 
         //matrix vector multiplication
-#pragma loop unroll
+#pragma unroll
         for(unsigned col = 0; col < SIZE; col++) {
             double tmp_p = p[col];
-#pragma loop unroll
+#pragma unroll
             for(unsigned row = 0; row < SIZE; row++) {
                 Ap[row] = ((col != 0)?Ap[row]:0.0) + A[col*SIZE+row]*tmp_p;
             }
@@ -40,7 +40,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
         }
 
         rr_new = 0;
-#pragma loop unroll
+#pragma unroll
         for(unsigned i = 0; i < SIZE; i++) {
             rr_new += r[i] * r[i];
         }
@@ -49,7 +49,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
         rr_new = rr;
         if(rr/bb < squared_tol) {break;}
 
-#pragma loop unroll
+#pragma unroll
         for(unsigned i = 0; i < SIZE; i++) {
             p[i] = r[i] + beta*p[i];
         }
