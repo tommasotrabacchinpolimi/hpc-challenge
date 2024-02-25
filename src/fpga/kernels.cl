@@ -15,6 +15,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
         //matrix vector multiplication
         for(unsigned row = 0; row < SIZE; row++) {
             Ap[row] = 0.0;
+#pragma unroll 2
             for(unsigned col = 0; col < SIZE; col++) {
                 Ap[row] += A[col*SIZE+row]*p[col];
             }
