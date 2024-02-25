@@ -3,7 +3,7 @@
 #define COLUMNS_GROUP_SIZE 64
 //#include "../../include/CL/opencl.h"
 
-__kernel void gemv(__global const double * a, __global const double * x, __global double * y, int ncols, int nrows)
+__kernel void gemv(__global const double * __restrict__ a, __global const double * __restrict__ x, __global double * __restrict__ y, int ncols, int nrows)
 {
     double rhs_group[RHS_GROUP_SIZE] = {0};
     double row_group[COLUMNS_GROUP_SIZE] = {0};
