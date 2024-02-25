@@ -1,39 +1,59 @@
-#define ROWS_GROUP_SIZE 64
-#define RHS_GROUP_SIZE 64
-#define COLUMNS_GROUP_SIZE 64
-//#include "../../include/CL/opencl.h"
 
-__kernel void gemv(__global const double * __restrict__ a, __global const double * __restrict__ x, __global double * __restrict__ y, int ncols, int nrows)
+#define SIZE 32
+
+__kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, __global const double * __restrict__ b, __global double * __restrict__ x, unsigned size, __global double * __restrict__ r, __global double * __restrict__ p, __global double* __restrict__ Ap, unsigned max_iters, double squared_tol, double bb)
 {
-    double rhs_group[RHS_GROUP_SIZE] = {0};
-    double row_group[COLUMNS_GROUP_SIZE] = {0};
-    double reduce_array[COLUMNS_GROUP_SIZE/2] = {0};
-    double sum = 0;
-    for(int i = 0; i < ncols; i += RHS_GROUP_SIZE) {
+    double alpha, beta, rr, rr_new;
+    int num_iters;
 
-        for(int j = 0; j < RHS_GROUP_SIZE && i + j < ncols; j++) {
-            rhs_group[j] = x[i + j];
-        }
+    rr = bb;
 
-        for(int j = 0; j < nrows; j += ROWS_GROUP_SIZE) {
-            for (int l = 0; l < ROWS_GROUP_SIZE && j + l < nrows; l++) {
-                for(int k = i ; k < i + RHS_GROUP_SIZE; k+= COLUMNS_GROUP_SIZE) {
-                    sum = 0;
-                    for(int t = 0; t < COLUMNS_GROUP_SIZE; t++) {
-                        row_group[t] = ((t + k < i + RHS_GROUP_SIZE)?a[(j+l)*ncols + k + t]:0.0) * ((k + t < ncols)?rhs_group[k - i + t]:0.0);
-                    }
 
-                    for(int t = 0; t  < COLUMNS_GROUP_SIZE/2; t++) {
-                        reduce_array[t] = row_group[2*t] + row_group[2*t + 1];
-                    }
 
-                    for(int t = 0; t < COLUMNS_GROUP_SIZE/2; t++) {
-                        sum += reduce_array[t];
-                    }
+    for(num_iters = 1; num_iters <= max_iters; num_iters++) {
 
-                    y[j + l] += sum;
-                }
+        //matrix vector multiplication
+#pragma loop unroll
+        for(unsigned col = 0; col < SIZE; col++) {
+            double tmp_p = p[col];
+#pragma loop unroll
+            for(unsigned row = 0; row < SIZE; row++) {
+                Ap[row] = ((col != 0)?Ap[row]:0.0) + A[col*SIZE+row]*tmp_p;
             }
         }
+
+        double tmp_dot_result = 0;
+#pragma unroll
+        for(unsigned i = 0; i < SIZE; i++) {
+            tmp_dot_result += p[i]*Ap[i];
+        }
+        alpha = rr/tmp_dot_result;
+
+#pragma unroll
+        for(unsigned i = 0; i < SIZE; i++) {
+            x[i] += alpha * p[i];
+        }
+
+#pragma unroll
+        for(unsigned i = 0; i < SIZE; i++) {
+            r[i] += -alpha * Ap[i];
+        }
+
+        rr_new = 0;
+#pragma loop unroll
+        for(unsigned i = 0; i < SIZE; i++) {
+            rr_new += r[i] * r[i];
+        }
+
+        beta = rr_new /  rr;
+        rr_new = rr;
+        if(rr/bb < squared_tol) {break;}
+
+#pragma loop unroll
+        for(unsigned i = 0; i < SIZE; i++) {
+            p[i] = r[i] + beta*p[i];
+        }
     }
+
+
 }
