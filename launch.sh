@@ -1,12 +1,12 @@
 #!/bin/bash -l
-#SBATCH -N 1
-#SBATCH --ntasks-per-node=1
-
-#SBATCH --time=03:00:00
-#SBATCH --account=p200301
-#SBATCH --partition=cpu
-#SBATCH --qos=default
-#SBATCH --cpus-per-task=1
+#SBATCH --qos=default                      # SLURM qos
+#SBATCH --nodes=1                          # number of nodes
+#SBATCH --ntasks=1                         # number of tasks
+#SBATCH --ntasks-per-node=1                # number of tasks per node
+#SBATCH --time=03:00:00                    # time (HH:MM:SS)
+#SBATCH --partition=cpu                    # partition
+#SBATCH --account=p200301                  # project account
+#SBATCH --cpus-per-task=1                  # CORES per task
 
 module load ifpgasdk
 module load 520nmx
