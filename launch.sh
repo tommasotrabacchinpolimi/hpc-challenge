@@ -10,6 +10,6 @@
 
 module load ifpgasdk
 module load 520nmx
-cd hpc-challenge/src/fpga
+cd src/fpga
 aoc -board=p520_hpc_m210h_g3x16 -fp-relaxed -DINTEL_CL -o CG_kernel kernels.cl -v -report
 
