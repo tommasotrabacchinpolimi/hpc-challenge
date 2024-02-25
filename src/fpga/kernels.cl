@@ -2,7 +2,7 @@
 #define UNROLL 16
 #define LATENCY 8
 
-double reduce(const double * __restrict__ array1, const double * __restrict__ array2, unsigned size) {
+double reduce(__global const double * __restrict__ array1, __global const double * __restrict__ array2, unsigned size) {
     double shift_reg[LATENCY] = {0.0};
     double final_sum = 0.0;
 
