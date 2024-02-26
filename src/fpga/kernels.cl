@@ -45,7 +45,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
     for(num_iters = 1; num_iters <= max_iters; num_iters++) {
 
         //matrix vector multiplication
-#pragma unroll 3
+#pragma unroll 2
         for(unsigned row = 0; row < size; row++) {
             Ap[row] = reduce(&A[row*size], p, size);
         }
@@ -66,7 +66,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
         rr_new = reduce(r,r,size);
 
         beta = rr_new /  rr;
-        rr_new = rr;
+        rr = rr_new;
         if(rr/bb < squared_tol) {break;}
 
 #pragma unroll UNROLL
