@@ -1,5 +1,5 @@
 
-#define UNROLL 24
+#define UNROLL 16
 #define LATENCY 128
 #define SIZE 10000
 
@@ -46,7 +46,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
 
         //matrix vector multiplication
         for(unsigned row = 0; row < SIZE; row++) {
-            Ap[row] = reduce(&A[row*size], p, size);
+            Ap[row] = reduce(&A[row*size], p, SIZE);
         }
 
         double tmp_dot_result = reduce(Ap, p, SIZE);
