@@ -1,5 +1,5 @@
 
-#define UNROLL 24
+#define UNROLL 16
 #define LATENCY 128
 #define SIZE 10000
 
