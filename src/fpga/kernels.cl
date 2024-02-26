@@ -14,11 +14,12 @@ double reduce(__global const double * __restrict__ array1, __global const double
             unsigned  index = i * UNROLL + j;
             sum += (index < size) ? array1[index]*array2[index] : 0.0;
         }
-        shift_reg[LATENCY - 1] = shift_reg[0] + sum;
+        shift_reg[LATENCY - 1] += sum;
 #pragma unroll
         for(unsigned j = 0; j < LATENCY - 1; j++) {
             shift_reg[j] = shift_reg[j + 1];
         }
+        shift_reg[LATENCY - 1] = shift_reg[0];
     }
 #pragma unroll
     for(unsigned i = 0; i < LATENCY; i++) {
