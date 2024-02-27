@@ -181,17 +181,19 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 int main() {
     cl_context context;
     cl_command_queue** command_queues;
-    init_cl(1, command_queues, &context);
+    if(init_cl(1, command_queues, &context)!=0) {
+        std::cout << "error" << std::endl;
+    }
 
     size_t size = 2000;
 
-    double** host_matrix;
-    double** host_rhs;
+    double* host_matrix;
+    double* host_rhs;
     double* host_sol = new double[size];
 
-    generate_rhs(size, 1.0, host_rhs);
-    generate_matrix(size, host_matrix);
-    memset(host_sol, 0, size * sizeof(double));
+    //generate_rhs(size, 1.0, &host_rhs);
+    //generate_matrix(size, &host_matrix);
+    //memset(host_sol, 0, size * sizeof(double));
 
 }
 
