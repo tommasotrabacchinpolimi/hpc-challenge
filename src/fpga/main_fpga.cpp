@@ -21,16 +21,16 @@ cl_kernel reduce_rows;
 cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* context) {
     cl_int err;
     cl_uint num_plat_found;
-    cl_platform_id myp;
+    cl_platform_id* myp = (cl_platform_id*)malloc(2*sizeof(cl_platform_id));
 
-    err = clGetPlatformIDs(1, &myp, &num_plat_found);
+    err = clGetPlatformIDs(2, myp, &num_plat_found);
 
     std::cout << "found platform " << num_plat_found << std::endl;
 
     cl_device_id* mydev = (cl_device_id*)malloc(device_numbers * sizeof(cl_device_id));
 
     cl_uint found_device_n;
-    err = clGetDeviceIDs(myp, CL_DEVICE_TYPE_ACCELERATOR, device_numbers, mydev, &found_device_n);
+    err = clGetDeviceIDs(myp[1], CL_DEVICE_TYPE_ACCELERATOR, device_numbers, mydev, &found_device_n);
     if(err == CL_DEVICE_NOT_FOUND) {
         std::cout << "no device found" << std::endl;
     }
