@@ -24,5 +24,6 @@ target_compile_options(main_cuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
 target_compile_options(templated_cuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
         -O3
         -lcublas
+        -march=sm_80
         >)
 
