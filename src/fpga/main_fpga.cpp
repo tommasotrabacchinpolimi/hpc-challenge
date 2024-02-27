@@ -24,6 +24,11 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
     cl_platform_id* myp = (cl_platform_id*)malloc(2*sizeof(cl_platform_id));
 
     err = clGetPlatformIDs(2, myp, &num_plat_found);
+    for(int i = 0; i < num_plat_found; i++) {
+        char name[100];
+        clGetPlatformInfo(myp[i],CL_PLATFORM_NAME, 100, name, NULL);
+        std::cout << name << std::endl;
+    }
 
     std::cout << "found platform " << num_plat_found << std::endl;
 
