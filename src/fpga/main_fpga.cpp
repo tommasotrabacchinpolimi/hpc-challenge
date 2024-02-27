@@ -2,7 +2,7 @@
 // Created by tomma on 23/02/2024.
 //
 
-#include "Cl/opencl.h"
+#include "CL/opencl.h"
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
