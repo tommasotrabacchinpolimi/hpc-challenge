@@ -31,6 +31,9 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
 
     cl_uint found_device_n;
     err = clGetDeviceIDs(myp, CL_DEVICE_TYPE_ACCELERATOR, device_numbers, mydev, &found_device_n);
+    if(err == CL_DEVICE_NOT_FOUND) {
+        std::cout << "no device found" << std::endl;
+    }
 
     if(device_numbers != found_device_n) {
         std::cerr << "not enough devices : " << found_device_n << std::endl;
