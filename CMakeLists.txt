@@ -5,7 +5,7 @@ include_directories(include)
 
 add_executable(main src/conjugate_gradient.cpp )
 add_executable(main_cuda src/main.cu )
-add_executable(test_fpga src/fpga/test.cpp)
+#add_executable(test_fpga src/fpga/test.cpp)
 add_executable(templated_cuda src/templated_cuda.cu)
 add_executable(test_nccl src/nccl_test.cu)
 add_executable(fpga_main src/fpga/main_fpga.cpp)
