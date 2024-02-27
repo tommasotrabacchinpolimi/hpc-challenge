@@ -20,8 +20,12 @@ cl_kernel reduce_rows;
 
 cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* context) {
     cl_int err;
+    cl_uint num_plat_found;
     cl_platform_id myp;
-    err = clGetPlatformIDs(1, &myp, nullptr);
+
+    err = clGetPlatformIDs(1, &myp, &num_plat_found);
+
+    std::cout << "found platform " << num_plat_found << std::endl;
 
     cl_device_id* mydev = (cl_device_id*)malloc(device_numbers * sizeof(cl_device_id));
 
