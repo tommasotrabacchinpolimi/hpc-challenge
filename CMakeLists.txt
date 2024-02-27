@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(matrix_vector_multiplication CUDA CXX)
 
 include_directories(include)
+include_directories(include/CL)
 
 add_executable(main src/conjugate_gradient.cpp )
 add_executable(main_cuda src/main.cu )
