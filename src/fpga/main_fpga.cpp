@@ -29,7 +29,7 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
     err = clGetDeviceIDs(myp, CL_DEVICE_TYPE_ACCELERATOR, device_numbers, mydev, &found_device_n);
 
     if(device_numbers != found_device_n) {
-        std::cerr << "not enough devices" << std::endl;
+        std::cerr << "not enough devices : " << found_device_n << std::endl;
         free(mydev);
         exit(1);
     }
@@ -180,8 +180,8 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 int main() {
     cl_context context;
-    cl_command_queue** command_queues;
-    if(init_cl(1, command_queues, &context)!=0) {
+    cl_command_queue* command_queues;
+    if(init_cl(1, &command_queues, &context)!=0) {
         std::cout << "error" << std::endl;
     }
 
