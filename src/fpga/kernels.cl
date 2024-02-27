@@ -1,6 +1,6 @@
 
-#define UNROLL 8
-#define LATENCY 128
+#define UNROLL 1
+#define LATENCY 16
 //#define SIZE 10000
 
 double reduce(__global const double * __restrict__ array1, __global const double * __restrict__ array2, unsigned size) {
@@ -45,7 +45,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
     for(num_iters = 1; num_iters <= max_iters; num_iters++) {
 
         //matrix vector multiplication
-#pragma unroll 2
+//#pragma unroll 2
         for(unsigned row = 0; row < size; row++) {
             Ap[row] = reduce(&A[row*size], p, size);
         }
@@ -53,12 +53,12 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
         double tmp_dot_result = reduce(Ap, p, size);
         alpha = rr/tmp_dot_result;
 
-#pragma unroll UNROLL
+//#pragma unroll UNROLL
         for(unsigned i = 0; i < size; i++) {
             x[i] += alpha * p[i];
         }
 
-#pragma unroll UNROLL
+//#pragma unroll UNROLL
         for(unsigned i = 0; i < size; i++) {
             r[i] += -alpha * Ap[i];
         }
@@ -69,7 +69,7 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
         rr = rr_new;
         if(rr/bb < squared_tol) {break;}
 
-#pragma unroll UNROLL
+//#pragma unroll UNROLL
         for(unsigned i = 0; i < size; i++) {
             p[i] = r[i] + beta*p[i];
         }
