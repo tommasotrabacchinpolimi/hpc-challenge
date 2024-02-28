@@ -122,7 +122,7 @@ cl_mem allocateDevice(const double* host_array, cl_int* err, size_t size, cl_con
 
 template<typename Type>
 cl_mem allocateDevice(cl_int* err, size_t size, cl_context context) {
-    return clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size * sizeof(Type), NULL, NULL, err);
+    return clCreateBuffer(context, CL_MEM_READ_WRITE, size * sizeof(Type), NULL, NULL, err);
 }
 
 
