@@ -52,7 +52,6 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
     for(cl_uint i = 0; i < device_numbers; i++) {
         *queues[i] = clCreateCommandQueueWithProperties(*context, (*mydev)[i], 0, &err);
     }
-    free(mydev);
 
     return err;
 }
