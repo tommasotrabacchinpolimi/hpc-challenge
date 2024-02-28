@@ -8,6 +8,7 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <cmath>
 #define CL_TARGET_OPENCL_VERSION 120
 
 #define MATRIX_VECTOR_KERNEL_NAME gemv
@@ -216,6 +217,9 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     for(int i = 0; i < size; i++) {
         tmp[i] = 0.0;
         for(int j = 0; j < size; j++) {
+            if(std::isnan(host_x[j])) {
+                std::cout << "error nan" << std::endl;
+            }
             tmp[i] += host_A[i*size+j]*host_x[j];
         }
     }
