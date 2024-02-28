@@ -200,7 +200,7 @@ int main() {
     if(init_cl(1, &command_queues, &context, &devices)!=0) {
         std::cout << "error" << std::endl;
     }
-    load_program("../src/fpga/CG_kernel_reduced.aocx", &program, context, 1, devices);
+    //load_program("../src/fpga/CG_kernel_reduced.aocx", &program, context, 1, devices);
 
 
     //generate_rhs(size, 1.0, &host_rhs);
