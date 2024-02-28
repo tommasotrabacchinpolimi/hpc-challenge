@@ -35,7 +35,7 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
     *mydev = (cl_device_id*)malloc(device_numbers * sizeof(cl_device_id));
 
     cl_uint found_device_n;
-    err = clGetDeviceIDs(myp[1], CL_DEVICE_TYPE_ACCELERATOR, device_numbers, mydev, &found_device_n);
+    err = clGetDeviceIDs(myp[1], CL_DEVICE_TYPE_ACCELERATOR, device_numbers, *mydev, &found_device_n);
     if(err == CL_DEVICE_NOT_FOUND) {
         std::cout << "no device found" << std::endl;
     }
@@ -46,11 +46,11 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
         exit(1);
     }
 
-    *context = clCreateContext(NULL, device_numbers, mydev, NULL, NULL, &err);
+    *context = clCreateContext(NULL, device_numbers, *mydev, NULL, NULL, &err);
 
     *queues = (cl_command_queue*)malloc(sizeof(cl_command_queue) * device_numbers);
     for(cl_uint i = 0; i < device_numbers; i++) {
-        *queues[i] = clCreateCommandQueueWithProperties(*context, mydev[i], 0, &err);
+        *queues[i] = clCreateCommandQueueWithProperties(*context, (*mydev)[i], 0, &err);
     }
     free(mydev);
 
