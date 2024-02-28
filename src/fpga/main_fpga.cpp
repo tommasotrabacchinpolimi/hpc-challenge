@@ -166,19 +166,22 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     cl_int err;
     cl_mem device_A = allocateDeviceReadOnly<double>(host_A, &err, size * size, context, queue);
     check_cl("error A", err);
+    std::cout << "allocated A" << std::endl;
     cl_mem device_b = allocateDeviceReadOnly<double>(host_b, &err, size, context, queue);
     check_cl("error b", err);
+    std::cout << "allocated b" << std::endl;
     cl_mem device_x = allocateDevice<double>(host_x, &err, size, context, queue);
     check_cl("error x", err);
-
+    std::cout << "allocated x" << std::endl;
     cl_mem device_r = allocateDevice<double>(host_b, &err, size, context, queue);
     check_cl("error r", err);
-
+    std::cout << "allocated r" << std::endl;
     cl_mem device_p = allocateDevice<double>(host_b, &err, size, context, queue);
     check_cl("error p", err);
-
+    std::cout << "allocated p" << std::endl;
     cl_mem device_Ap = allocateDevice<double>(&err, size, context);
     check_cl("error Ap", err);
+    std::cout << "allocated Ap" << std::endl;
 
 
     double squared_tol = rel_error*rel_error;
