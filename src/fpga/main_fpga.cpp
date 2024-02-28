@@ -196,6 +196,7 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     for(int i = 0; i < size; i++) {
         bb += host_b[i]*host_b[i];
     }
+    std::cout << "bb = " << bb << std::endl;
 
     check_cl("set A", clSetKernelArg(cg, 0, sizeof(cl_mem), &device_A));
     check_cl("set b", clSetKernelArg(cg, 1, sizeof(cl_mem), &device_b));
