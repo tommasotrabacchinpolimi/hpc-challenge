@@ -183,10 +183,8 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     check_cl("set bb", clSetKernelArg(cg, 9, sizeof(double), &bb));
 
     cl_event wait_finish_kernel;
-    cl_event wait_finish_copy;
     clEnqueueTask(queue, cg, 0, NULL, &wait_finish_kernel);
-    check_cl("error with copy",clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, 1, &wait_finish_kernel, &wait_finish_copy));
-    clWaitForEvents(1, &wait_finish_copy);
+    check_cl("error with copy",clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, 1, &wait_finish_kernel, NULL));
     return;
     double* tmp = new double[size];
     memset(tmp, 0, size*sizeof(double));
