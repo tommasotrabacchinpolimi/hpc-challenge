@@ -257,7 +257,7 @@ int main() {
     cl_command_queue* command_queues;
     cl_program program;
     cl_device_id* devices;
-    if(init_cl(1, &command_queues, &context, &devices)!=0) {
+    if(init_cl(2, &command_queues, &context, &devices)!=0) {
         std::cout << "error" << std::endl;
     }
     load_program("../src/fpga/CG_kernel_reduced.aocx", &program, context, 1, devices);
