@@ -178,6 +178,11 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     check_cl("set niters", clSetKernelArg(cg, 7, sizeof(int), &max_iters));
     check_cl("set tol", clSetKernelArg(cg, 8, sizeof(double), &squared_tol));
     check_cl("set bb", clSetKernelArg(cg, 9, sizeof(double), &bb));
+
+    cl_event wait_finish;
+    clEnqueueTask(queue, cg, 0, NULL, &wait_finish);
+    clWaitForEvents(1, &wait_finish);
+
 }
 
 void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list) {
