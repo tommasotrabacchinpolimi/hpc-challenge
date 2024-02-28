@@ -162,15 +162,22 @@ void matrix_vector_multiplication(cl_mem device_A, cl_mem device_p, cl_mem devic
 void conjugate_gradients(const double * host_A, const double * host_b, double * host_x, size_t size, int max_iters, double rel_error, cl_context context, cl_command_queue queue) {
     cl_int err;
     cl_mem device_A = allocateDeviceReadOnly<double>(host_A, &err, size * size, context, queue);
+    check_cl("error A", err);
     cl_mem device_b = allocateDeviceReadOnly<double>(host_b, &err, size, context, queue);
+    check_cl("error b", err);
     cl_mem device_x = allocateDevice<double>(host_x, &err, size, context, queue);
+    check_cl("error x", err);
 
     cl_mem device_r = allocateDevice<double>(host_b, &err, size, context, queue);
+    check_cl("error r", err);
+
     cl_mem device_p = allocateDevice<double>(host_b, &err, size, context, queue);
+    check_cl("error p", err);
+
     cl_mem device_Ap = allocateDevice<double>(&err, size, context);
-    //just for test
-    check_cl("test failed: ", clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, 0, NULL, NULL));
-    //
+    check_cl("error Ap", err);
+
+
     double squared_tol = rel_error*rel_error;
     double bb = 0;
     for(int i = 0; i < size; i++) {
