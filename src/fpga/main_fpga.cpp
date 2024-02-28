@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <string>
 
 #define MATRIX_VECTOR_KERNEL_NAME gemv
 #define REDUCE_ROWS_KERNEL_NAME reduce_rows
@@ -16,7 +17,14 @@
 
 cl_kernel matrix_vector_kernel;
 cl_kernel reduce_rows;
+cl_kernel cg;
 
+
+void check_cl(const std::string& msg, cl_int err) {
+    if(err != CL_SUCCESS) {
+        std::cout << msg << " : " <<err << std::endl;
+    }
+}
 
 cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* context, cl_device_id** mydev) {
     cl_int err;
@@ -146,7 +154,6 @@ void matrix_vector_multiplication(cl_mem device_A, cl_mem device_p, cl_mem devic
 
 
 
-template<typename Type>
 void conjugate_gradients(const double * host_A, const double * host_b, double * host_x, size_t size, int max_iters, double rel_error, cl_context context, cl_command_queue queue) {
     cl_int err;
     cl_mem device_A = allocateDeviceReadOnly<double>(host_A, &err, size * size, context);
@@ -155,10 +162,23 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     cl_mem device_r = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_p = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_Ap = allocateDevice<double>(&err, size, context);
+    int niters = 1;
+    double squared_tol = rel_error*rel_error;
+    double bb = 0;
+    for(int i = 0; i < size; i++) {
+        bb += host_b[i]*host_b[i];
+    }
 
-
-
-
+    check_cl("set A", clSetKernelArg(cg, 0, sizeof(cl_mem), &device_A));
+    check_cl("set b", clSetKernelArg(cg, 1, sizeof(cl_mem), &device_b));
+    check_cl("set x", clSetKernelArg(cg, 2, sizeof(cl_mem), &device_x));
+    check_cl("set size", clSetKernelArg(cg, 3, sizeof(double), &size));
+    check_cl("set r", clSetKernelArg(cg, 4, sizeof(double), &device_r));
+    check_cl("set p", clSetKernelArg(cg, 5, sizeof(cl_mem), &device_p));
+    check_cl("set Ap", clSetKernelArg(cg, 6, sizeof(cl_mem), &device_Ap));
+    check_cl("set niters", clSetKernelArg(cg, 7, sizeof(int), &niters));
+    check_cl("set tol", clSetKernelArg(cg, 8, sizeof(double), &squared_tol));
+    check_cl("set bb", clSetKernelArg(cg, 9, sizeof(double), &bb));
 }
 
 void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list) {
@@ -203,14 +223,19 @@ int main() {
     load_program("../src/fpga/CG_kernel_reduced.aocx", &program, context, 1, devices);
 
     cl_int err;
-    create_kernel(program, "conjugate_gradient_kernel", &err);
+    cg = create_kernel(program, "conjugate_gradient_kernel", &err);
     if(err == CL_SUCCESS) {
         std::cout << "Success" << std::endl;
     }
+    size_t size = 1000;
+    double* rhs;
+    double* matrix;
+    double* sol = new double[size];
 
-    //generate_rhs(size, 1.0, &host_rhs);
-    //generate_matrix(size, &host_matrix);
-    //memset(host_sol, 0, size * sizeof(double));
+    generate_rhs(size, 1.0, &rhs);
+    generate_matrix(size, &matrix);
+    memset(sol, 0, size * sizeof(double));
+    conjugate_gradients(matrix, rhs, sol, size, 1, 1e-12, context, command_queues[0]);
 
 }
 
