@@ -213,6 +213,10 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     check_cl("error with kernel launch", clEnqueueTask(queue, cg, 0, NULL, &wait_finish_kernel));
     std::cout << "size " << size << std::endl;
     check_cl("error with copy",clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, 1, &wait_finish_kernel, NULL));
+    std::cout << "print sol:" << std::endl;
+    for(int i = 0; i < 5; i++) {
+        std::cout << host_x[i] << std::endl;
+    }
     double* tmp = new double[size];
     memset(tmp, 0, size*sizeof(double));
     for(int i = 0; i < size; i++) {
