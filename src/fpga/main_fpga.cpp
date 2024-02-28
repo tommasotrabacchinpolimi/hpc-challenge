@@ -8,6 +8,7 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#define CL_TARGET_OPENCL_VERSION 120
 
 #define MATRIX_VECTOR_KERNEL_NAME gemv
 #define REDUCE_ROWS_KERNEL_NAME reduce_rows
