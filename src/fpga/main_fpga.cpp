@@ -116,7 +116,7 @@ cl_mem allocateDeviceReadOnly(const double* host_array, cl_int* err, size_t size
 template<typename Type>
 cl_mem allocateDevice(const double* host_array, cl_int* err, size_t size, cl_context context, cl_command_queue queue) {
     cl_mem ret = clCreateBuffer(context, CL_MEM_READ_WRITE, size * sizeof(Type), NULL, NULL, err);
-    clEnqueueWriteBuffer(queue, ret, CL_TRUE, 0, size, host_array, 0, NULL, NULL);
+    clEnqueueWriteBuffer(queue, ret, CL_TRUE, 0, size * sizeof(Type), host_array, 0, NULL, NULL);
     return ret;
 }
 
