@@ -162,7 +162,6 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     cl_mem device_r = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_p = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_Ap = allocateDevice<double>(&err, size, context);
-    int niters = 1;
     double squared_tol = rel_error*rel_error;
     double bb = 0;
     for(int i = 0; i < size; i++) {
@@ -176,7 +175,7 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     check_cl("set r", clSetKernelArg(cg, 4, sizeof(double), &device_r));
     check_cl("set p", clSetKernelArg(cg, 5, sizeof(cl_mem), &device_p));
     check_cl("set Ap", clSetKernelArg(cg, 6, sizeof(cl_mem), &device_Ap));
-    check_cl("set niters", clSetKernelArg(cg, 7, sizeof(int), &niters));
+    check_cl("set niters", clSetKernelArg(cg, 7, sizeof(int), &max_iters));
     check_cl("set tol", clSetKernelArg(cg, 8, sizeof(double), &squared_tol));
     check_cl("set bb", clSetKernelArg(cg, 9, sizeof(double), &bb));
 }
