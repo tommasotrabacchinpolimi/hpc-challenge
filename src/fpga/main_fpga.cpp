@@ -171,7 +171,7 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     check_cl("set A", clSetKernelArg(cg, 0, sizeof(cl_mem), &device_A));
     check_cl("set b", clSetKernelArg(cg, 1, sizeof(cl_mem), &device_b));
     check_cl("set x", clSetKernelArg(cg, 2, sizeof(cl_mem), &device_x));
-    check_cl("set size", clSetKernelArg(cg, 3, sizeof(double), &size));
+    check_cl("set size", clSetKernelArg(cg, 3, sizeof(int), &size));
     check_cl("set r", clSetKernelArg(cg, 4, sizeof(double), &device_r));
     check_cl("set p", clSetKernelArg(cg, 5, sizeof(cl_mem), &device_p));
     check_cl("set Ap", clSetKernelArg(cg, 6, sizeof(cl_mem), &device_Ap));
@@ -181,8 +181,6 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
 
     cl_event wait_finish;
     clEnqueueTask(queue, cg, 0, NULL, &wait_finish);
-    clWaitForEvents(1, &wait_finish);
-
 }
 
 void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list) {
