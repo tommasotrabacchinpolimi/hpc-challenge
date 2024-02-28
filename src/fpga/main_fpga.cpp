@@ -157,11 +157,12 @@ void matrix_vector_multiplication(cl_mem device_A, cl_mem device_p, cl_mem devic
 void conjugate_gradients(const double * host_A, const double * host_b, double * host_x, size_t size, int max_iters, double rel_error, cl_context context, cl_command_queue queue) {
     cl_int err;
     cl_mem device_A = allocateDeviceReadOnly<double>(host_A, &err, size * size, context);
+    if(err != CL_SUCCESS) {
+        std::cout << "error in allocating A " << err << std::endl;
+    }
     cl_mem device_b = allocateDeviceReadOnly<double>(host_b, &err, size, context);
     cl_mem device_x = allocateDevice<double>(host_x, &err, size, context);
-    if(err != CL_SUCCESS) {
-        std::cout << "error in allocating x " << err << std::endl;
-    }
+
     cl_mem device_r = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_p = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_Ap = allocateDevice<double>(&err, size, context);
