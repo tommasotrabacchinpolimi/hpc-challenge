@@ -18,21 +18,21 @@ cl_kernel matrix_vector_kernel;
 cl_kernel reduce_rows;
 
 
-cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* context) {
+cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* context, cl_device_id** mydev) {
     cl_int err;
     cl_uint num_plat_found;
     cl_platform_id* myp = (cl_platform_id*)malloc(2*sizeof(cl_platform_id));
 
     err = clGetPlatformIDs(2, myp, &num_plat_found);
-    for(int i = 0; i < num_plat_found; i++) {
+    /*for(int i = 0; i < num_plat_found; i++) {
         char name[100];
         clGetPlatformInfo(myp[i],CL_PLATFORM_NAME, 100, name, NULL);
         std::cout << name << std::endl;
-    }
+    }*/
 
     std::cout << "found platform " << num_plat_found << std::endl;
 
-    cl_device_id* mydev = (cl_device_id*)malloc(device_numbers * sizeof(cl_device_id));
+    *mydev = (cl_device_id*)malloc(device_numbers * sizeof(cl_device_id));
 
     cl_uint found_device_n;
     err = clGetDeviceIDs(myp[1], CL_DEVICE_TYPE_ACCELERATOR, device_numbers, mydev, &found_device_n);
@@ -40,7 +40,7 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
         std::cout << "no device found" << std::endl;
     }
 
-    if(device_numbers != found_device_n) {
+    if(device_numbers < found_device_n) {
         std::cerr << "not enough devices : " << found_device_n << std::endl;
         free(mydev);
         exit(1);
@@ -181,6 +181,9 @@ void load_program(const std::string& path, cl_program* program, cl_context conte
     cl_int errorcode_ret;
 
     *program = clCreateProgramWithBinary(context, num_devices, device_list, &length, binaries, &binary_status, &errorcode_ret);
+    if(errorcode_ret != CL_SUCCESS) {
+        std::cout << "error in loading the program" << std::endl;
+    }
 }
 
 cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* errorcode) {
@@ -193,15 +196,13 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 int main() {
     cl_context context;
     cl_command_queue* command_queues;
-    if(init_cl(1, &command_queues, &context)!=0) {
+    cl_program program;
+    cl_device_id* devices;
+    if(init_cl(1, &command_queues, &context, &devices)!=0) {
         std::cout << "error" << std::endl;
     }
+    load_program("../src/fpga/CG_kernel_reduced.aocx", &program, context, 1, devices);
 
-    size_t size = 2000;
-
-    double* host_matrix;
-    double* host_rhs;
-    double* host_sol = new double[size];
 
     //generate_rhs(size, 1.0, &host_rhs);
     //generate_matrix(size, &host_matrix);
