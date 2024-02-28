@@ -171,10 +171,10 @@ void matrix_vector_multiplication(cl_mem device_A, cl_mem device_p, cl_mem devic
 
 void conjugate_gradients(const double * host_A, const double * host_b, double * host_x, size_t size, int max_iters, double rel_error, cl_context context, cl_command_queue queue) {
     cl_int err;
-    cl_mem device_A = allocateDeviceReadOnly<double>(host_A, &err, size * size, context, queue);
+    cl_mem device_A = allocateDevice<double>(host_A, &err, size * size, context, queue);
     check_cl("error A", err);
     std::cout << "allocated A" << std::endl;
-    cl_mem device_b = allocateDeviceReadOnly<double>(host_b, &err, size, context, queue);
+    cl_mem device_b = allocateDevice<double>(host_b, &err, size, context, queue);
     check_cl("error b", err);
     std::cout << "allocated b" << std::endl;
     cl_mem device_x = allocateDevice<double>(host_x, &err, size, context, queue);
