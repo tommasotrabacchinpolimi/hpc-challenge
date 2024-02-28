@@ -181,6 +181,22 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
 
     cl_event wait_finish;
     clEnqueueTask(queue, cg, 0, NULL, &wait_finish);
+    clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, NULL, 0, NULL);
+
+    double* tmp = new double[size];
+    memset(tmp, 0, size*sizeof(double));
+    for(int i = 0; i < size; i++) {
+        tmp[i] = 0.0;
+        for(int j = 0; j < size; j++) {
+            tmp[i] += host_A[i*size+j]*host_x[j];
+        }
+    }
+    double res_err = 0;
+    for(int i = 0; i < size; i++) {
+        res_err += (host_b[i] - tmp[i])*(host_b[i] - tmp[i]);
+    }
+    std::cout << "error: " << res_err << std::endl;
+
 }
 
 void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list) {
