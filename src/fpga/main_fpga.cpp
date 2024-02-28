@@ -55,12 +55,17 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
         exit(1);
     }
 
+    std::cout << "ok" << std::endl;
+
     *context = clCreateContext(NULL, device_numbers, *mydev, NULL, NULL, &err);
+
+    std::cout << "okk" << std::endl;
 
     *queues = (cl_command_queue*)malloc(sizeof(cl_command_queue) * device_numbers);
     for(cl_uint i = 0; i < device_numbers; i++) {
         *queues[i] = clCreateCommandQueueWithProperties(*context, (*mydev)[i], 0, &err);
     }
+    std::cout << "okkk" << std::endl;
 
     return err;
 }
