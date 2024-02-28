@@ -96,7 +96,7 @@ void generate_rhs(size_t n, double value, double** rhs_out) {
 
 template<typename Type>
 cl_mem allocateDeviceReadOnly(const double* host_array, cl_int* err, size_t size, cl_context context, cl_command_queue queue) {
-    cl_mem ret = clCreateBuffer(context, CL_MEM_READ_ONLY, size * sizeof(Type), (double*)host_array, NULL, err);
+    cl_mem ret = clCreateBuffer(context, CL_MEM_READ_ONLY, size * sizeof(Type), NULL, NULL, err);
     clEnqueueWriteBuffer(queue, ret, CL_TRUE, 0, size, host_array, 0, NULL, NULL);
     return ret;
 }
@@ -104,8 +104,10 @@ cl_mem allocateDeviceReadOnly(const double* host_array, cl_int* err, size_t size
 
 
 template<typename Type>
-cl_mem allocateDevice(const double* host_array, cl_int* err, size_t size, cl_context context) {
-    return clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size * sizeof(Type), (double*)host_array, NULL, err);
+cl_mem allocateDevice(const double* host_array, cl_int* err, size_t size, cl_context context, cl_command_queue queue) {
+    cl_mem ret = clCreateBuffer(context, CL_MEM_READ_WRITE, size * sizeof(Type), NULL, NULL, err);
+    clEnqueueWriteBuffer(queue, ret, CL_TRUE, 0, size, host_array, 0, NULL, NULL);
+    return ret;
 }
 
 template<typename Type>
@@ -160,14 +162,11 @@ void matrix_vector_multiplication(cl_mem device_A, cl_mem device_p, cl_mem devic
 void conjugate_gradients(const double * host_A, const double * host_b, double * host_x, size_t size, int max_iters, double rel_error, cl_context context, cl_command_queue queue) {
     cl_int err;
     cl_mem device_A = allocateDeviceReadOnly<double>(host_A, &err, size * size, context, queue);
-    if(err != CL_SUCCESS) {
-        std::cout << "error in allocating A " << err << std::endl;
-    }
     cl_mem device_b = allocateDeviceReadOnly<double>(host_b, &err, size, context, queue);
-    cl_mem device_x = allocateDevice<double>(host_x, &err, size, context);
+    cl_mem device_x = allocateDevice<double>(host_x, &err, size, context, queue);
 
-    cl_mem device_r = allocateDevice<double>(host_b, &err, size, context);
-    cl_mem device_p = allocateDevice<double>(host_b, &err, size, context);
+    cl_mem device_r = allocateDevice<double>(host_b, &err, size, context, queue);
+    cl_mem device_p = allocateDevice<double>(host_b, &err, size, context, queue);
     cl_mem device_Ap = allocateDevice<double>(&err, size, context);
     //just for test
     check_cl("test failed: ", clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, 0, NULL, NULL));
