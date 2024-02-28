@@ -291,7 +291,7 @@ int main() {
 
     generate_rhs(size, 1.0, &rhs);
     generate_matrix(size, &matrix);
-    conjugate_gradients(matrix, rhs, sol, size, 0, 1e-12, context, command_queues[0]);
+    conjugate_gradients(matrix, rhs, sol, size, 20, 1e-12, context, command_queues[0]);
 
 }
 
