@@ -202,6 +202,11 @@ int main() {
     }
     load_program("../src/fpga/CG_kernel_reduced.aocx", &program, context, 1, devices);
 
+    cl_int err;
+    create_kernel(program, "conjugate_gradient_kernel", &err);
+    if(err == CL_SUCCESS) {
+        std::cout << "Success" << std::endl;
+    }
 
     //generate_rhs(size, 1.0, &host_rhs);
     //generate_matrix(size, &host_matrix);
