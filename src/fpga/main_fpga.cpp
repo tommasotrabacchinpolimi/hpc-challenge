@@ -221,6 +221,9 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
                 std::cout << "error nan" << std::endl;
             }
             tmp[i] += host_A[i*size+j]*host_x[j];
+            if(std::isnan(tmp[i])) {
+                std::cout << "error nan tmp" << std::endl;
+            }
         }
     }
     double res_err = 0;
