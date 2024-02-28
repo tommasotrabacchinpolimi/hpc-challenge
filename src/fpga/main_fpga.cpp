@@ -95,8 +95,10 @@ void generate_rhs(size_t n, double value, double** rhs_out) {
 }
 
 template<typename Type>
-cl_mem allocateDeviceReadOnly(const double* host_array, cl_int* err, size_t size, cl_context context) {
-    return clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size * sizeof(Type), (double*)host_array, NULL, err);
+cl_mem allocateDeviceReadOnly(const double* host_array, cl_int* err, size_t size, cl_context context, cl_command_queue queue) {
+    cl_mem ret = clCreateBuffer(context, CL_MEM_READ_ONLY, size * sizeof(Type), (double*)host_array, NULL, err);
+    clEnqueueWriteBuffer(queue, ret, CL_TRUE, 0, size, host_array, 0, NULL, NULL);
+    return ret;
 }
 
 
