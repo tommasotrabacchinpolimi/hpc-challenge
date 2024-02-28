@@ -294,9 +294,12 @@ int main() {
     double* matrix;
     double* sol = new double[size];
 
+    for(int i = 0; i < size; i++) {
+        sol[i] = 0.0;
+    }
+
     generate_rhs(size, 1.0, &rhs);
     generate_matrix(size, &matrix);
-    memset(sol, 0, size * sizeof(double));
     conjugate_gradients(matrix, rhs, sol, size, 100, 1e-12, context, command_queues[0]);
 
 }
