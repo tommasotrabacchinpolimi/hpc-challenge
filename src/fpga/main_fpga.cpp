@@ -96,19 +96,19 @@ void generate_rhs(size_t n, double value, double** rhs_out) {
 
 template<typename Type>
 cl_mem allocateDeviceReadOnly(const double* host_array, cl_int* err, size_t size, cl_context context) {
-    return clCreateBuffer(context, CL_MEM_READ_ONLY, size * sizeof(Type), (double*)host_array, NULL, err);
+    return clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, size * sizeof(Type), (double*)host_array, NULL, err);
 }
 
 
 
 template<typename Type>
 cl_mem allocateDevice(const double* host_array, cl_int* err, size_t size, cl_context context) {
-    return clCreateBuffer(context, CL_MEM_READ_WRITE, size * sizeof(Type), (double*)host_array, NULL, err);
+    return clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size * sizeof(Type), (double*)host_array, NULL, err);
 }
 
 template<typename Type>
 cl_mem allocateDevice(cl_int* err, size_t size, cl_context context) {
-    return clCreateBuffer(context, CL_MEM_READ_WRITE, size * sizeof(Type), NULL, NULL, err);
+    return clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, size * sizeof(Type), NULL, NULL, err);
 }
 
 
