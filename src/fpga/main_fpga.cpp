@@ -40,9 +40,9 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
         std::cout << "no device found" << std::endl;
     }
 
-    if(device_numbers < found_device_n) {
+    if(device_numbers > found_device_n) {
         std::cerr << "not enough devices : " << found_device_n << std::endl;
-        free(mydev);
+        free(*mydev);
         exit(1);
     }
 
