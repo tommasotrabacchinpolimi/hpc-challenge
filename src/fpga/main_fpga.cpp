@@ -165,6 +165,9 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     cl_mem device_r = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_p = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_Ap = allocateDevice<double>(&err, size, context);
+    //just for test
+    check_cl("test failed: ", clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, 0, NULL, NULL));
+    //
     double squared_tol = rel_error*rel_error;
     double bb = 0;
     for(int i = 0; i < size; i++) {
