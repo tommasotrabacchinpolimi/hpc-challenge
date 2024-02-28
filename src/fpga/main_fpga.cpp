@@ -160,7 +160,7 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     cl_mem device_b = allocateDeviceReadOnly<double>(host_b, &err, size, context);
     cl_mem device_x = allocateDevice<double>(host_x, &err, size, context);
     if(err != CL_SUCCESS) {
-        std::cout << "error in allocating x" << std::endl;
+        std::cout << "error in allocating x " << err << std::endl;
     }
     cl_mem device_r = allocateDevice<double>(host_b, &err, size, context);
     cl_mem device_p = allocateDevice<double>(host_b, &err, size, context);
