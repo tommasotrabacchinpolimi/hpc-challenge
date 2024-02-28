@@ -181,7 +181,8 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
 
     cl_event wait_finish;
     clEnqueueTask(queue, cg, 0, NULL, &wait_finish);
-    clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, NULL, 0, NULL);
+    clWaitForEvents(1, &wait_finish);
+    clEnqueueReadBuffer(queue, device_x, CL_TRUE, 0, size * sizeof(double), host_x, 0, NULL, NULL);
 
     double* tmp = new double[size];
     memset(tmp, 0, size*sizeof(double));
