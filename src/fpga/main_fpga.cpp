@@ -280,7 +280,7 @@ int main() {
     if(err == CL_SUCCESS) {
         std::cout << "Success" << std::endl;
     }
-    size_t size = 500;
+    size_t size = 15;
     double* rhs;
     double* matrix;
     double* sol = new double[size];
