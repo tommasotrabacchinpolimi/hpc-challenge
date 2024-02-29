@@ -193,6 +193,7 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     std::cout << "allocated Ap" << std::endl;
 
 
+
     double squared_tol = rel_error*rel_error;
     double bb = 0;
     for(int i = 0; i < size; i++) {
@@ -220,7 +221,6 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
         std::cout << host_x[i] << std::endl;
     }
     double* tmp = new double[size];
-    memset(tmp, 0, size*sizeof(double));
     for(int i = 0; i < size; i++) {
         tmp[i] = 0.0;
         for(int j = 0; j < size; j++) {
@@ -229,7 +229,7 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     }
     double res_err = 0;
     for(int i = 0; i < size; i++) {
-
+        std::cout << host_b[i] << " " << tmp[i] << std::endl;
         res_err += (host_b[i] - tmp[i])*(host_b[i] - tmp[i]);
     }
     std::cout << "error: " << res_err << std::endl;
