@@ -282,7 +282,7 @@ int main() {
     if(err == CL_SUCCESS) {
         std::cout << "Success" << std::endl;
     }
-    size_t size = 70
+    size_t size = 70;
     double* rhs;
     double* matrix;
     double* sol = new double[size];
