@@ -1,5 +1,5 @@
 
-#define UNROLL 8
+#define UNROLL 2
 #define LATENCY 32
 //#define SIZE 10000
 
@@ -36,6 +36,7 @@ double reduce(__global const double * __restrict__ array1, __global const double
 __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, __global const double * __restrict__ p, __global double * __restrict__ Ap, unsigned nrows, unsigned ncols )
 {
 
+#pragma unroll 4
     for(unsigned row = 0; row < nrows; row++) {
         Ap[row] = reduce(&A[row*ncols], p, ncols);
     }
