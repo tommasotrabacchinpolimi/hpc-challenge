@@ -11,5 +11,5 @@
 module load ifpgasdk
 module load 520nmx
 cd src/fpga
-aoc -fast-compile -board=p520_hpc_m210h_g3x16 -fp-relaxed -DINTEL_CL -o CG_kernel_reduced kernels.cl -v -report
+aoc -v -report -board=p520_hpc_m210h_g3x16 -fp-relaxed -DINTEL_CL -o MVV matrix_vector_kernel.cl
 

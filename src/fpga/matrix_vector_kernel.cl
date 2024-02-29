@@ -33,7 +33,7 @@ double reduce(__global const double * __restrict__ array1, __global const double
 
 
 
-__kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, __global const double * __restrict__ p, __global double * __restrict__ Ap, unsigned nrows, unsigned ncols )
+__kernel void matrix_vector_kernel(__global const double * __restrict__ A, __global const double * __restrict__ p, __global double * __restrict__ Ap, unsigned nrows, unsigned ncols )
 {
 
 #pragma unroll 3
