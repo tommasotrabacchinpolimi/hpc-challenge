@@ -285,6 +285,80 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
     std::cout << "finished conjugate gradient" << std::endl;
 }
 
+void conjugate_gradient_aligned2(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
+    std::cout << "starting conjugate gradient" << std::endl;
+    double alpha;
+    double beta;
+    double rr;
+    double rr_new;
+    double bb;
+    cl_int err;
+    int iters;
+    size_t* offset = new size_t[device_number];
+    size_t* partial_size = new size_t[device_number];
+    double** splitted_matrix = new double* [device_number];
+    split_matrix(A, device_number, splitted_matrix, offset, partial_size, size);
+
+    cl_mem* device_A = new cl_mem[device_number];
+    cl_mem* device_p = new cl_mem[device_number];
+    cl_mem* device_Ap = new cl_mem[device_number];
+
+    double* Ap = new double[size];
+    double* Ap_test = new double[size];
+    double* p = new double[size];
+    double* r = new double[size];
+
+    for(int i = 0; i < size; i++) {
+        p[i] = b[i];
+        r[i] = b[i];
+        x[i] = 0.0;
+    }
+
+
+    bb = dot(b,b,size);
+    rr = bb;
+    for(int i = 0; i < device_number; i++) {
+        device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
+        linkBufferToDevice(queues[i], device_A[i]);
+        writeToBuffer(queues[i], device_A[i], 0, partial_size[i] * size, A, offset[i] * size);
+
+        device_p[i] = allocateDevice(&err, size, context);
+        linkBufferToDevice(queues[i], device_p[i]);
+
+
+        device_Ap[i] = allocateDevice(&err, partial_size[i], context);
+        linkBufferToDevice(queues[i], device_Ap[i]);
+    }
+
+    for(iters = 1; iters <= max_iters; iters++) {
+        for(int i = 0; i < device_number; i++) {
+            writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
+            matrix_vector_multiplication(Ap, offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
+        }
+
+        gemv(A, p, Ap_test, size, size);
+        check_product(Ap_test, Ap, size);
+        alpha = rr / dot(p, Ap, size);
+        axpby(alpha, p, 1.0, x, size);
+        axpby(-alpha, Ap, 1.0, r, size);
+        rr_new = dot(r, r, size);
+        beta = rr_new / rr;
+        rr = rr_new;
+        if(std::sqrt(rr / bb) < tol) { break; }
+        axpby(1.0, r, beta, p, size);
+    }
+
+    if(iters <= max_iters)
+    {
+        printf("Converged in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
+    }
+    else
+    {
+        printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(rr / bb));
+    }
+    std::cout << "finished conjugate gradient" << std::endl;
+}
+
 void conjugate_gradient(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
     std::cout << "starting conjugate gradient" << std::endl;
     double alpha;
@@ -407,7 +481,7 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 
 int main() {
-    size_t size = 50;
+    size_t size = 1000;
     int max_iters = 1000;
     double tol = 1e-12;
     cl_int err = 0;
@@ -429,7 +503,7 @@ int main() {
     double* sol = new double[size];
     generate_matrix(size, &matrix);
     generate_rhs(size,1,  &rhs);
-    conjugate_gradient_aligned(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
+    conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
 
 
 }
