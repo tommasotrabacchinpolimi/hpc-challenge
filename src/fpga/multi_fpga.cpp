@@ -210,7 +210,7 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
     double** splitted_Ap = new double* [device_number];
     split_matrix(A, device_number, splitted_matrix, offset, partial_size, size);
     for(int i = 0; i < device_number; i++) {
-        splitted_Ap[i] = new  (std::align_val_t(MEM_ALIGNMENT))double[partial_size[i]];
+        splitted_Ap[i] = new double[partial_size[i]];
     }
 
     cl_mem* device_A = new cl_mem[device_number];
