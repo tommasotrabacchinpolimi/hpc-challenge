@@ -430,7 +430,7 @@ int main() {
     double* sol = new double[size];
     generate_matrix(size, &matrix);
     generate_rhs(size,1,  &rhs);
-    conjugate_gradient(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
+    conjugate_gradient_aligned(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
 
 
 }
