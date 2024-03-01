@@ -335,10 +335,37 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
     }
 
     for(iters = 1; iters <= max_iters;iters++) {
+        double tmp = 0.0;
         for(int i = 0; i < device_number; i++) {
             writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
             matrix_vector_multiplication(splitted_Ap[i], 0, &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
         }
+
+        int current_loop_device = 0;
+        int current_loop_device_it = 0;
+        for(int i = 0; i < size; i++, current_loop_device_it++) {
+            if(offset[current_loop_device + 1] == i) {
+                current_loop_device++;
+                current_loop_device_it = 0;
+            }
+            tmp += p[i] * splitted_Ap[current_loop_device][current_loop_device_it];
+        }
+        axpby(alpha, p, 1.0, x, size);
+        //axpby(-alpha, Ap, 1.0, r, size);
+        current_loop_device_it = 0;
+        current_loop_device = 0;
+        for(int i = 0; i < size; i++) {
+            if(offset[current_loop_device + 1] == i) {
+                current_loop_device++;
+                current_loop_device_it = 0;
+            }
+            r[i] += -alpha * splitted_Ap[current_loop_device][current_loop_device_it];
+        }
+        rr_new = dot(r, r, size);
+        beta = rr_new / rr;
+        rr = rr_new;
+        if(std::sqrt(rr / bb) < tol) { break; }
+        axpby(1.0, r, beta, p, size);
     }
 }
 
