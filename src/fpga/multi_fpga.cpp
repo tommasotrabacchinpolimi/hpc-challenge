@@ -161,6 +161,7 @@ void check_product(const double* array1, const double* array2, size_t size) {
     double err = 0;
     for(int i = 0; i < size; i++) {
         err += (array1[i] - array2[i]) * (array1[i] - array2[i]);
+        std::cout << array1[i] << " "  << array2[i] << std::endl;
     }
 
     if(err > 1e-12) {
