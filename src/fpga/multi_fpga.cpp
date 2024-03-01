@@ -226,6 +226,7 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
     bb = dot(b,b,size);
     rr = bb;
     for(int i = 0; i < device_number; i++) {
+        std::cout << "size: " << partial_size[i] * size << std::endl;
         device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
         linkBufferToDevice(queues[i], device_A[i]);
         writeToBuffer(queues[i], device_A[i], 0, partial_size[i] * size, splitted_matrix[i], 0);
