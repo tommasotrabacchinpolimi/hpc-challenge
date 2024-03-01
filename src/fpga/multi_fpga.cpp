@@ -258,13 +258,15 @@ void load_program(const std::string& path, cl_program* program, cl_context conte
         std::cout << "error in opening the file" << std::endl;
         exit(1);
     }
-    size_t length;
+    size_t* length = new size_t[num_devices];
     unsigned char* buffer;
     input_file.seekg (0, std::ios::end);
-    length = input_file.tellg();
+    for(int i = 0; i < num_devices; i++) {
+        length[i] = input_file.tellg();
+    }
     input_file.seekg (0, std::ios::beg);
-    buffer = new unsigned char [length];
-    input_file.read (reinterpret_cast<char *>(buffer), length);
+    buffer = new unsigned char [length[0]];
+    input_file.read (reinterpret_cast<char *>(buffer), length[0]);
     input_file.close();
     const unsigned char** binaries = (const unsigned char**)malloc(sizeof(unsigned char*) * num_devices);
     for(int i = 0; i < num_devices; i++) {
@@ -273,7 +275,7 @@ void load_program(const std::string& path, cl_program* program, cl_context conte
     cl_int binary_status;
     cl_int errorcode_ret;
 
-    *program = clCreateProgramWithBinary(context, num_devices, device_list, &length, binaries, &binary_status, &errorcode_ret);
+    *program = clCreateProgramWithBinary(context, num_devices, device_list, length, binaries, &binary_status, &errorcode_ret);
     check_cl(errorcode_ret, "error in building the program");
     free(binaries);
 }
