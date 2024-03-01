@@ -147,9 +147,9 @@ void init_cl(cl_uint index_platform, cl_uint device_numbers, cl_command_queue** 
 }
 
 void matrix_vector_multiplication(double* host_Ap, size_t offset, cl_mem* A, cl_mem* p, cl_mem* Ap, size_t nrows, size_t ncols, cl_command_queue* queue, cl_kernel* matrix_vector_kernel) {
-    check_cl(clSetKernelArg(*matrix_vector_kernel, 0, nrows*ncols*sizeof(double), A), "error setting first kernel argument");
-    check_cl(clSetKernelArg(*matrix_vector_kernel, 1, ncols * sizeof(double), p), "error setting second kernel argument");
-    check_cl(clSetKernelArg(*matrix_vector_kernel, 2, nrows * sizeof(double), Ap), "error setting third kernel argument");
+    check_cl(clSetKernelArg(*matrix_vector_kernel, 0, sizeof(cl_mem), A), "error setting first kernel argument");
+    check_cl(clSetKernelArg(*matrix_vector_kernel, 1, sizeof(cl_mem), p), "error setting second kernel argument");
+    check_cl(clSetKernelArg(*matrix_vector_kernel, 2, sizeof(cl_mem), Ap), "error setting third kernel argument");
     check_cl(clSetKernelArg(*matrix_vector_kernel, 3, sizeof(size_t), &nrows), "error setting fourth kernel argument");
     check_cl(clSetKernelArg(*matrix_vector_kernel, 4, sizeof(size_t), &ncols), "error setting fifth kernel argument");
 
