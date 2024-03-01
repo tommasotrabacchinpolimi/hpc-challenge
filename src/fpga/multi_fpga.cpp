@@ -36,18 +36,17 @@ void axpby(double alpha, const double * x, double beta, double * y, size_t size)
     }
 }
 
-void gemv(double alpha, const double * A, const double * x, double beta, double * y, size_t num_rows, size_t num_cols)
+void gemv(const double * A, const double * x,double * y, size_t num_rows, size_t num_cols)
 {
-    // y = alpha * A * x + beta * y;
 
     for(size_t r = 0; r < num_rows; r++)
     {
-        double y_val = 0.0;
+        y[r] = 0.0;
         for(size_t c = 0; c < num_cols; c++)
         {
-            y_val += alpha * A[r * num_cols + c] * x[c];
+            y[r] += A[r * num_cols + c] * x[c];
         }
-        y[r] = beta * y[r] + y_val;
+
     }
 }
 
