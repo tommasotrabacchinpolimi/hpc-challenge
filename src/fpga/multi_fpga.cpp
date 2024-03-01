@@ -297,14 +297,18 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
     size_t* offset = new size_t[device_number];
     size_t* partial_size = new size_t[device_number];
     double** splitted_matrix = new double* [device_number];
+    double** splitted_Ap = new double* [device_number];
     split_matrix(A, device_number, splitted_matrix, offset, partial_size, size);
+
+    for(int i = 0; i < device_number; i++) {
+        splitted_Ap[i] = new double[partial_size[i]];
+    }
 
     cl_mem* device_A = new cl_mem[device_number];
     cl_mem* device_p = new cl_mem[device_number];
     cl_mem* device_Ap = new cl_mem[device_number];
 
     double* Ap = new double[size];
-    double* Ap_test = new double[size];
     double* p = new double[size];
     double* r = new double[size];
 
@@ -336,8 +340,6 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
             matrix_vector_multiplication(Ap, offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
         }
 
-        gemv(A, p, Ap_test, size, size);
-        check_product(Ap_test, Ap, size);
         alpha = rr / dot(p, Ap, size);
         axpby(alpha, p, 1.0, x, size);
         axpby(-alpha, Ap, 1.0, r, size);
