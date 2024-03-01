@@ -155,7 +155,7 @@ void matrix_vector_multiplication(double* host_Ap, size_t offset, cl_mem* A, cl_
 
     cl_event wait_finish_kernel;
     check_cl(clEnqueueTask(*queue, *matrix_vector_kernel, 0, NULL, &wait_finish_kernel), "error launching the kernel");
-    check_cl(clEnqueueReadBuffer(*queue, *Ap, CL_TRUE, offset*sizeof(double), nrows*sizeof(double), host_Ap + offset, 0, NULL, NULL), "error with reading back the solution");
+    check_cl(clEnqueueReadBuffer(*queue, *Ap, CL_TRUE, 0, nrows*sizeof(double), host_Ap + offset, 0, NULL, NULL), "error with reading back the solution");
 }
 
 void check_product(const double* array1, const double* array2, size_t size) {
