@@ -227,7 +227,7 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
             matrix_vector_multiplication(Ap, offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
         }
 
-        gemv(1.0, A, p, 0.0, Ap_test, size, size);
+        gemv(A, p, Ap_test, size, size);
         check_product(Ap_test, Ap, size);
         alpha = rr / dot(p, Ap, size);
         axpby(alpha, p, 1.0, x, size);
