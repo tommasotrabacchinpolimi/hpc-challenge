@@ -355,7 +355,7 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
         axpby(alpha, p, 1.0, x, size);
         current_loop_device_it = 0;
         current_loop_device = 0;
-        for(int i = 0; i < size; i++) {
+        for(int i = 0; i < size; i++, current_loop_device_it++) {
             if(current_loop_device + 1 != device_number && offset[current_loop_device + 1] == i) {
                 current_loop_device++;
                 current_loop_device_it = 0;
