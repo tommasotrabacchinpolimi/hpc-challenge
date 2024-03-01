@@ -171,6 +171,7 @@ void check_product(const double* array1, const double* array2, size_t size) {
 }
 
 void conjugate_gradient(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
+    std::cout << "starting conjugate gradient" << std::endl;
     double alpha;
     double beta;
     double rr;
@@ -250,7 +251,7 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
     {
         printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(rr / bb));
     }
-
+    std::cout << "finished conjugate gradient" << std::endl;
 }
 
 void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list) {
@@ -304,9 +305,7 @@ int main() {
     cl_program program;
     cl_kernel* kernels = new cl_kernel[number_device_required];
     init_cl(platform_index, number_device_required, &queues, &context, &devices);
-    std::cout << "building the program" << std::endl;
     load_program(MATRIX_VECTOR_KERNEL_PATH, &program, context, number_device_required, devices);
-    std::cout << "program built" << std::endl;
     for(int i = 0; i < number_device_required; i++) {
         kernels[i] = create_kernel(program, MATRIX_VECTOR_KERNEL_NAME, &err);
     }
