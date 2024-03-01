@@ -171,18 +171,6 @@ void check_product(const double* array1, const double* array2, size_t size) {
 }
 
 void split_matrix(const double* matrix, size_t split_number, double** splitted_matrix, size_t* offset, size_t* partial_size, size_t size) {
-    offset[0] = 0;
-    for(int i = 1; i < split_number; i++) {
-        offset[i] = offset[i-1] + size/split_number;
-    }
-
-    for(int i = 0; i < split_number; i++) {
-        if(i != split_number - 1) {
-            partial_size[i] = offset[i+1] - offset[i];
-        } else {
-            partial_size[split_number - 1] = size - offset[split_number - 1];
-        }
-    }
 
     for(int i = 0; i < split_number; i++) {
         splitted_matrix[i] = new double[partial_size[i] * size];
@@ -301,6 +289,19 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
     size_t* partial_size = new size_t[device_number];
     double** splitted_matrix = new double* [device_number];
     double** splitted_Ap = new double* [device_number];
+
+    offset[0] = 0;
+    for(int i = 1; i < device_number; i++) {
+        offset[i] = offset[i-1] + size/device_number;
+    }
+
+    for(int i = 0; i < device_number; i++) {
+        if(i != device_number - 1) {
+            partial_size[i] = offset[i+1] - offset[i];
+        } else {
+            partial_size[device_number - 1] = size - offset[device_number - 1];
+        }
+    }
     split_matrix(A, device_number, splitted_matrix, offset, partial_size, size);
 
     for(int i = 0; i < device_number; i++) {
