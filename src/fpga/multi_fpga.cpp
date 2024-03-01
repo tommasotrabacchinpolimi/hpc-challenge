@@ -186,7 +186,7 @@ void split_matrix(const double* matrix, size_t split_number, double** splitted_m
 
     for(int i = 0; i < split_number; i++) {
         splitted_matrix[i] = new double[partial_size[i] * size];
-        memcpy(splitted_matrix[i], matrix + offset[i] * size, partial_size[i]);
+        memcpy(splitted_matrix[i], matrix + offset[i] * size, partial_size[i] * size);
     }
 }
 
