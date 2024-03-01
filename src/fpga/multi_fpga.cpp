@@ -106,9 +106,6 @@ cl_mem allocateDevice(cl_int* err, size_t size, cl_context context) {
 }
 
 cl_mem allocateDeviceReadOnly(cl_int* err, size_t size, cl_context context) {
-    if(size == 0) {
-        std::cout << "size 0" << std::endl;
-    }
     cl_mem ret = clCreateBuffer(context, CL_MEM_READ_ONLY, size * sizeof(double), NULL, NULL, err);
     check_cl(*err, "Error in creating uninitialized Read-Only buffer");
     return ret;
@@ -333,7 +330,7 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
     bb = dot(b,b,size);
     rr = bb;
     for(int i = 0; i < device_number; i++) {
-        device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
+        device_A[i] = allocateDevice(&err, partial_size[i] * size, context);
         linkBufferToDevice(queues[i], device_A[i]);
         writeToBuffer(queues[i], device_A[i], 0, partial_size[i] * size, A, offset[i] * size);
 
