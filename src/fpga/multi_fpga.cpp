@@ -164,7 +164,7 @@ void check_product(const double* array1, const double* array2, size_t size) {
     }
 
     if(err > 1e-12) {
-        std::cout << "error in matrix_vector multiplication" << std::endl;
+        std::cout << "error in matrix_vector multiplication: " << err << std::endl;
         exit(1);
     }
 }
