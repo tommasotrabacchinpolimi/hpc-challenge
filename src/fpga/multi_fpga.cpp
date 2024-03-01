@@ -292,7 +292,7 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 
 int main() {
-    size_t size = 51;
+    size_t size = 1000;
     int max_iters = 50;
     double tol = 1e-12;
     cl_int err = 0;
