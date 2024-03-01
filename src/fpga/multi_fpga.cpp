@@ -13,6 +13,7 @@
 #define MAX_PLATFORM 10
 #define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
 #define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
+#define MEM_ALIGNMENT 64
 
 double dot(const double * x, const double * y, size_t size)
 {
@@ -299,8 +300,8 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
     }
 
     for(int i = 0; i < device_number; i++) {
-        splitted_A[i] = new double [partial_size[i] * size];
-        splitted_Ap[i] = new double [partial_size[i]];
+        splitted_A[i] = new (std::align_val_t(MEM_ALIGNMENT))double  [partial_size[i] * size];
+        splitted_Ap[i] = new (std::align_val_t(MEM_ALIGNMENT))double [partial_size[i]];
         for(int j = 0; j < size * partial_size[i]; j++) {
             splitted_A[i][j] = A[size*offset[i] + j];
         }
@@ -310,7 +311,7 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
     cl_mem* device_p = new cl_mem[device_number];
     cl_mem* device_Ap = new cl_mem[device_number];
 
-    double* p = new double[size];
+    double* p = new(std::align_val_t(MEM_ALIGNMENT)) double[size];
     double* r = new double[size];
 
     for(int i = 0; i < size; i++) {
