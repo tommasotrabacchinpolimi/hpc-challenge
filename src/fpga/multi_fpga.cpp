@@ -335,12 +335,21 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
     }
 
     for(iters = 1; iters <= max_iters; iters++) {
+        double tmp = 0;
         for(int i = 0; i < device_number; i++) {
             writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
             matrix_vector_multiplication(splitted_Ap[i], 0, &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
         }
 
-        alpha = rr / dot(p, Ap, size);
+        int current_loop_device = 0;
+        int current_loop_device_it = 0;
+        for(int i = 0; i < size; i++, current_loop_device_it++) {
+            if(offset[current_loop_device + 1] == i) {
+                current_loop_device++;
+                current_loop_device_it = 0;
+            }
+            tmp += p[i] * splitted_Ap[current_loop_device][current_loop_device_it];
+        }
         axpby(alpha, p, 1.0, x, size);
         axpby(-alpha, Ap, 1.0, r, size);
         rr_new = dot(r, r, size);
