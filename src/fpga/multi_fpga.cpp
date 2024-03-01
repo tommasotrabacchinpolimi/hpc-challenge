@@ -408,7 +408,7 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 int main() {
     size_t size = 1000;
-    int max_iters = 50;
+    int max_iters = 1000;
     double tol = 1e-12;
     cl_int err = 0;
     int number_device_required = 2;
@@ -429,7 +429,7 @@ int main() {
     double* sol = new double[size];
     generate_matrix(size, &matrix);
     generate_rhs(size,1,  &rhs);
-    conjugate_gradient(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
+    conjugate_gradient_aligned(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
 
 
 }
