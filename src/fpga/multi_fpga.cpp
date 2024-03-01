@@ -271,6 +271,7 @@ void load_program(const std::string& path, cl_program* program, cl_context conte
 
     *program = clCreateProgramWithBinary(context, num_devices, device_list, &length, binaries, &binary_status, &errorcode_ret);
     check_cl(errorcode_ret, "error in building the program");
+    free(binaries);
 }
 
 cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* errorcode) {
@@ -293,7 +294,9 @@ int main() {
     cl_program program;
     cl_kernel* kernels = new cl_kernel[number_device_required];
     init_cl(platform_index, number_device_required, &queues, &context, &devices);
+    std::cout << "building the program" << std::endl;
     load_program(MATRIX_VECTOR_KERNEL_PATH, &program, context, number_device_required, devices);
+    std::cout << "program built" << std::endl;
     for(int i = 0; i < number_device_required; i++) {
         kernels[i] = create_kernel(program, MATRIX_VECTOR_KERNEL_NAME, &err);
     }
