@@ -150,8 +150,8 @@ void matrix_vector_multiplication(double* host_Ap, size_t offset, cl_mem* A, cl_
     check_cl(clSetKernelArg(*matrix_vector_kernel, 0, sizeof(cl_mem), A), "error setting first kernel argument");
     check_cl(clSetKernelArg(*matrix_vector_kernel, 1, sizeof(cl_mem), p), "error setting second kernel argument");
     check_cl(clSetKernelArg(*matrix_vector_kernel, 2, sizeof(cl_mem), Ap), "error setting third kernel argument");
-    check_cl(clSetKernelArg(*matrix_vector_kernel, 3, sizeof(size_t), &nrows), "error setting fourth kernel argument");
-    check_cl(clSetKernelArg(*matrix_vector_kernel, 4, sizeof(size_t), &ncols), "error setting fifth kernel argument");
+    check_cl(clSetKernelArg(*matrix_vector_kernel, 3, sizeof(int), &nrows), "error setting fourth kernel argument");
+    check_cl(clSetKernelArg(*matrix_vector_kernel, 4, sizeof(int), &ncols), "error setting fifth kernel argument");
 
     cl_event wait_finish_kernel;
     check_cl(clEnqueueTask(*queue, *matrix_vector_kernel, 0, NULL, &wait_finish_kernel), "error launching the kernel");
