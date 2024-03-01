@@ -33,7 +33,7 @@ double reduce(__global const double * __restrict__ array1, __global const double
 
 
 
-__kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, __global const double * __restrict__ b, __global double * __restrict__ x, unsigned size, __global double * __restrict__ r, __global double * __restrict__ p, __global double* __restrict__ Ap, unsigned max_iters, double squared_tol, double bb)
+__kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, __global const double * __restrict__ b, __global double * __restrict__ x, unsigned size, __global double * __restrict__ r, __global double * __restrict__ p, __global double* __restrict__ Ap, unsigned max_iters, double squared_tol, double bb, int* actual_iterations, double* actual_error)
 {
     double alpha, beta, rr, rr_new;
     int num_iters;
@@ -75,5 +75,6 @@ __kernel void conjugate_gradient_kernel(__global const double * __restrict__ A, 
         }
     }
 
-
+    *actual_iterations = num_iters;
+    *actual_error = rr/bb;
 }
