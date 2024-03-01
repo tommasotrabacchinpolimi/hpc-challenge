@@ -155,7 +155,7 @@ void matrix_vector_multiplication(double* host_Ap, size_t offset, cl_mem* A, cl_
 
     cl_event wait_finish_kernel;
     check_cl(clEnqueueTask(*queue, *matrix_vector_kernel, 0, NULL, &wait_finish_kernel), "error launching the kernel");
-    check_cl(clEnqueueReadBuffer(*queue, *Ap, CL_TRUE, 0, nrows*sizeof(double), host_Ap + offset, 0, NULL, NULL), "error with reading back the solution");
+    check_cl(clEnqueueReadBuffer(*queue, *Ap, CL_TRUE, 0, nrows*sizeof(double), host_Ap, 0, NULL, NULL), "error with reading back the solution");
 }
 
 void check_product(const double* array1, const double* array2, size_t size) {
@@ -186,7 +186,7 @@ void split_matrix(const double* matrix, size_t split_number, double** splitted_m
     }
 
     for(int i = 0; i < split_number; i++) {
-        splitted_matrix[i] = new double[partial_size[i]];
+        splitted_matrix[i] = new  (std::align_val_t(MEM_ALIGNMENT))double[partial_size[i]];
         memcpy(splitted_matrix[i], matrix + offset[i] * size, partial_size[i]);
     }
 }
@@ -207,7 +207,7 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
     double** splitted_Ap = new double* [device_number];
     split_matrix(A, device_number, splitted_matrix, offset, partial_size, size);
     for(int i = 0; i < device_number; i++) {
-        splitted_Ap[i] = new double[partial_size[i]];
+        splitted_Ap[i] = new  (std::align_val_t(MEM_ALIGNMENT))double[partial_size[i]];
     }
 
     cl_mem* device_A = new cl_mem[device_number];
@@ -245,7 +245,7 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
         double tmp = 0;
         for(int i = 0; i < device_number; i++) {
             writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
-            matrix_vector_multiplication(splitted_Ap[i], offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
+            matrix_vector_multiplication(splitted_Ap[i], 0, &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
         }
 
 
