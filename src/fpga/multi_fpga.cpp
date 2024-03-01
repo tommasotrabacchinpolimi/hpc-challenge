@@ -277,6 +277,7 @@ void load_program(const std::string& path, cl_program* program, cl_context conte
 cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* errorcode) {
     cl_kernel kernel = clCreateKernel(program, kernel_name, errorcode);
     check_cl(*errorcode, "error in creating the kernel");
+    return kernel;
 }
 
 
@@ -284,7 +285,7 @@ int main() {
     size_t size = 500;
     int max_iters = 1000;
     double tol = 1e-12;
-    cl_int err;
+    cl_int err = 0;
     int number_device_required = 2;
     int platform_index = 1;
 
