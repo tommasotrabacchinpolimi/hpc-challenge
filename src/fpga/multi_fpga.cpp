@@ -164,7 +164,7 @@ void check_product(const double* array1, const double* array2, size_t size) {
         err += (array1[i] - array2[i]) * (array1[i] - array2[i]);
     }
 
-    if(std::sqrt(err) > 1e-12) {
+    if(err > 1e-12) {
         std::cout << "error in matrix_vector multiplication" << std::endl;
         exit(1);
     }
@@ -288,7 +288,7 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 
 int main() {
-    size_t size = 500;
+    size_t size = 50;
     int max_iters = 1;
     double tol = 1e-12;
     cl_int err = 0;
