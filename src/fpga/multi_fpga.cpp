@@ -161,7 +161,7 @@ void check_product(const double* array1, const double* array2, size_t size) {
     double err = 0;
     for(int i = 0; i < size; i++) {
         err += (array1[i] - array2[i]) * (array1[i] - array2[i]);
-        std::cout << array1[i] << " "  << array2[i] << std::endl;
+        //std::cout << array1[i] << " "  << array2[i] << std::endl;
     }
 
     /*if(err > 1e-12) {
@@ -292,7 +292,7 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 int main() {
     size_t size = 50;
-    int max_iters = 10;
+    int max_iters = 50;
     double tol = 1e-12;
     cl_int err = 0;
     int number_device_required = 2;
