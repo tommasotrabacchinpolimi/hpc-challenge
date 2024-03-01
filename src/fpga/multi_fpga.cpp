@@ -173,7 +173,7 @@ void check_product(const double* array1, const double* array2, size_t size) {
 
 void split_matrix(const double* matrix, size_t split_number, double** splitted_matrix, size_t* offset, size_t* partial_size, size_t size) {
     offset[0] = 0;
-    for(int i = 0; i < split_number; i++) {
+    for(int i = 1; i < split_number; i++) {
         offset[i] = offset[i-1] + size/split_number;
     }
 
