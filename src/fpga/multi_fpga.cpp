@@ -210,6 +210,7 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
 
 
     bb = dot(b,b,size);
+    rr = bb;
     for(int i = 0; i < device_number; i++) {
         device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
         linkBufferToDevice(queues[i], device_A[i]);
