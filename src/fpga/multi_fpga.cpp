@@ -351,8 +351,8 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
             }
             tmp += p[i] * splitted_Ap[current_loop_device][current_loop_device_it];
         }
+        alpha = rr / tmp;
         axpby(alpha, p, 1.0, x, size);
-        //axpby(-alpha, Ap, 1.0, r, size);
         current_loop_device_it = 0;
         current_loop_device = 0;
         for(int i = 0; i < size; i++) {
