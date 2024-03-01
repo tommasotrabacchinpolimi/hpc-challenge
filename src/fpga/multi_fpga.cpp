@@ -278,6 +278,7 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
 }
 
 void conjugate_gradient_aligned2(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
+    std::cout << "started conjugate gradient" << std::endl;
     double alpha, beta, rr, rr_new, bb;
     cl_int err;
     int iters;
@@ -367,6 +368,16 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
         if(std::sqrt(rr / bb) < tol) { break; }
         axpby(1.0, r, beta, p, size);
     }
+
+    if(iters <= max_iters)
+    {
+        printf("Converged in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
+    }
+    else
+    {
+        printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(rr / bb));
+    }
+    std::cout << "finished conjugate gradient" << std::endl;
 }
 
 void conjugate_gradient(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
