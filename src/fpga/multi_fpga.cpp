@@ -13,7 +13,6 @@
 #define MAX_PLATFORM 10
 #define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
 #define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
-#define MEM_ALIGNMENT 64
 
 double dot(const double * x, const double * y, size_t size)
 {
@@ -155,7 +154,7 @@ void matrix_vector_multiplication(double* host_Ap, size_t offset, cl_mem* A, cl_
 
     cl_event wait_finish_kernel;
     check_cl(clEnqueueTask(*queue, *matrix_vector_kernel, 0, NULL, &wait_finish_kernel), "error launching the kernel");
-    check_cl(clEnqueueReadBuffer(*queue, *Ap, CL_TRUE, 0, nrows*sizeof(double), host_Ap, 0, NULL, NULL), "error with reading back the solution");
+    check_cl(clEnqueueReadBuffer(*queue, *Ap, CL_TRUE, 0, nrows*sizeof(double), host_Ap + offset, 0, NULL, NULL), "error with reading back the solution");
 }
 
 void check_product(const double* array1, const double* array2, size_t size) {
@@ -170,122 +169,6 @@ void check_product(const double* array1, const double* array2, size_t size) {
         exit(1);
     }*/
 }
-
-void split_matrix(const double* matrix, size_t split_number, double** splitted_matrix, size_t* offset, size_t* partial_size, size_t size) {
-    offset[0] = 0;
-    for(int i = 1; i < split_number; i++) {
-        offset[i] = offset[i-1] + size/split_number;
-    }
-
-    for(int i = 0; i < split_number; i++) {
-        if(i != split_number - 1) {
-            partial_size[i] = offset[i+1] - offset[i];
-        } else {
-            partial_size[split_number - 1] = size - offset[i];
-        }
-    }
-
-    for(int i = 0; i < split_number; i++) {
-        splitted_matrix[i] = new double[partial_size[i]];
-        memcpy(splitted_matrix[i], matrix + offset[i] * size, partial_size[i]);
-    }
-}
-
-
-void conjugate_gradient_aligned(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
-    std::cout << "starting conjugate gradient" << std::endl;
-    double alpha;
-    double beta;
-    double rr;
-    double rr_new;
-    double bb;
-    cl_int err;
-    int iters;
-    size_t* offset = new size_t[device_number];
-    size_t* partial_size = new size_t[device_number];
-    double** splitted_matrix = new double* [device_number];
-    double** splitted_Ap = new double* [device_number];
-    split_matrix(A, device_number, splitted_matrix, offset, partial_size, size);
-    for(int i = 0; i < device_number; i++) {
-        splitted_Ap[i] = new double[partial_size[i]];
-    }
-
-    cl_mem* device_A = new cl_mem[device_number];
-    cl_mem* device_p = new cl_mem[device_number];
-    cl_mem* device_Ap = new cl_mem[device_number];
-
-    double* p = new double[size];
-    double* r = new double[size];
-
-    for(int i = 0; i < size; i++) {
-        p[i] = b[i];
-        r[i] = b[i];
-        x[i] = 0.0;
-    }
-
-
-    bb = dot(b,b,size);
-    rr = bb;
-    for(int i = 0; i < device_number; i++) {
-        device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
-        linkBufferToDevice(queues[i], device_A[i]);
-        writeToBuffer(queues[i], device_A[i], 0, partial_size[i] * size, splitted_matrix[i], 0);
-
-        device_p[i] = allocateDevice(&err, size, context);
-        linkBufferToDevice(queues[i], device_p[i]);
-
-
-        device_Ap[i] = allocateDevice(&err, partial_size[i], context);
-        linkBufferToDevice(queues[i], device_Ap[i]);
-    }
-
-    for(iters = 1; iters <= max_iters; iters++) {
-        double tmp = 0;
-        for(int i = 0; i < device_number; i++) {
-            writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
-            matrix_vector_multiplication(splitted_Ap[i], 0, &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
-        }
-
-
-        //alpha = rr / dot(p, Ap, size);
-        int current_loop_device = 0;
-        int current_loop_device_it = 0;
-        for(int i = 0; i < size; i++, current_loop_device_it++) {
-            if(offset[current_loop_device + 1] == i) {
-                current_loop_device++;
-                current_loop_device_it = 0;
-            }
-            tmp += p[i] * splitted_Ap[current_loop_device][current_loop_device_it];
-        }
-        axpby(alpha, p, 1.0, x, size);
-        //axpby(-alpha, Ap, 1.0, r, size);
-        current_loop_device_it = 0;
-        current_loop_device = 0;
-        for(int i = 0; i < size; i++) {
-            if(offset[current_loop_device + 1] == i) {
-                current_loop_device++;
-                current_loop_device_it = 0;
-            }
-            r[i] += -alpha * splitted_Ap[current_loop_device][current_loop_device_it];
-        }
-        rr_new = dot(r, r, size);
-        beta = rr_new / rr;
-        rr = rr_new;
-        if(std::sqrt(rr / bb) < tol) { break; }
-        axpby(1.0, r, beta, p, size);
-    }
-
-    if(iters <= max_iters)
-    {
-        printf("Converged in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
-    }
-    else
-    {
-        printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(rr / bb));
-    }
-    std::cout << "finished conjugate gradient" << std::endl;
-}
-
 
 void conjugate_gradient(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
     std::cout << "starting conjugate gradient" << std::endl;
@@ -330,7 +213,7 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
     bb = dot(b,b,size);
     rr = bb;
     for(int i = 0; i < device_number; i++) {
-        device_A[i] = allocateDevice(&err, partial_size[i] * size, context);
+        device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
         linkBufferToDevice(queues[i], device_A[i]);
         writeToBuffer(queues[i], device_A[i], 0, partial_size[i] * size, A, offset[i] * size);
 
@@ -410,7 +293,7 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 int main() {
     size_t size = 1000;
-    int max_iters = 2 * size;
+    int max_iters = 50;
     double tol = 1e-12;
     cl_int err = 0;
     int number_device_required = 2;
