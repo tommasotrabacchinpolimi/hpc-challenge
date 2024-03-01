@@ -11,6 +11,8 @@
 #include <math.h>
 
 #define MAX_PLATFORM 10
+#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
+#define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
 
 double dot(const double * x, const double * y, size_t size)
 {
@@ -249,21 +251,58 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
 
 }
 
+void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list) {
+    std::ifstream input_file;
+    input_file.open(path);
+    size_t length;
+    unsigned char* buffer;
+    input_file.seekg (0, std::ios::end);
+    length = input_file.tellg();
+    input_file.seekg (0, std::ios::beg);
+    buffer = new unsigned char [length];
+    input_file.read (reinterpret_cast<char *>(buffer), length);
+    input_file.close();
+    const unsigned char** binaries = (const unsigned char**)malloc(sizeof(unsigned char*) * num_devices);
+    for(int i = 0; i < num_devices; i++) {
+        binaries[i] = buffer;
+    }
+    cl_int binary_status;
+    cl_int errorcode_ret;
+
+    *program = clCreateProgramWithBinary(context, num_devices, device_list, &length, binaries, &binary_status, &errorcode_ret);
+    check_cl(errorcode_ret, "error in building the program");
+}
+
+cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* errorcode) {
+    cl_kernel kernel = clCreateKernel(program, kernel_name, errorcode);
+    check_cl(*errorcode, "error in creating the kernel");
+}
+
 
 int main() {
     size_t size = 500;
+    int max_iters = 1000;
+    double tol = 1e-12;
+    cl_int err;
     int number_device_required = 2;
     int platform_index = 1;
 
     cl_command_queue* queues;
     cl_context context;
     cl_device_id* devices;
+    cl_program program;
+    cl_kernel* kernels = new cl_kernel[number_device_required];
     init_cl(platform_index, number_device_required, &queues, &context, &devices);
-
+    load_program(MATRIX_VECTOR_KERNEL_PATH, &program, context, number_device_required, devices);
+    for(int i = 0; i < number_device_required; i++) {
+        kernels[i] = create_kernel(program, MATRIX_VECTOR_KERNEL_NAME, &err);
+    }
     double* matrix;
     double* rhs;
     double* sol = new double[size];
     generate_matrix(size, &matrix);
     generate_rhs(size,1,  &rhs);
+    conjugate_gradient(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
+
 
 }
