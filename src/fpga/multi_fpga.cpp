@@ -209,6 +209,7 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
     }
 
 
+    bb = dot(b,b,size);
     for(int i = 0; i < device_number; i++) {
         device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
         linkBufferToDevice(queues[i], device_A[i]);
@@ -289,8 +290,8 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 
 int main() {
-    size_t size = 30;
-    int max_iters = 1;
+    size_t size = 15;
+    int max_iters = 10;
     double tol = 1e-12;
     cl_int err = 0;
     int number_device_required = 2;
