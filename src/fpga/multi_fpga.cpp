@@ -106,6 +106,9 @@ cl_mem allocateDevice(cl_int* err, size_t size, cl_context context) {
 }
 
 cl_mem allocateDeviceReadOnly(cl_int* err, size_t size, cl_context context) {
+    if(size == 0) {
+        std::cout << "size 0" << std::endl;
+    }
     cl_mem ret = clCreateBuffer(context, CL_MEM_READ_ONLY, size * sizeof(double), NULL, NULL, err);
     check_cl(*err, "Error in creating uninitialized Read-Only buffer");
     return ret;
@@ -214,8 +217,6 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
     cl_mem* device_p = new cl_mem[device_number];
     cl_mem* device_Ap = new cl_mem[device_number];
 
-    //double* Ap = new double[size];
-    double* Ap_test = new double[size];
     double* p = new double[size];
     double* r = new double[size];
 
