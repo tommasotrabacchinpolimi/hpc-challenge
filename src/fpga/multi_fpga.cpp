@@ -180,13 +180,15 @@ void split_matrix(const double* matrix, size_t split_number, double** splitted_m
         if(i != split_number - 1) {
             partial_size[i] = offset[i+1] - offset[i];
         } else {
-            partial_size[split_number - 1] = size - offset[i];
+            partial_size[split_number - 1] = size - offset[split_number - 1];
         }
     }
 
     for(int i = 0; i < split_number; i++) {
         splitted_matrix[i] = new double[partial_size[i] * size];
-        memcpy(splitted_matrix[i], matrix + offset[i] * size, partial_size[i] * size);
+        for(int j = 0; j < partial_size[i]; j++) {
+            splitted_matrix[i][j] = matrix[j + offset[i] * size];
+        }
     }
 }
 
