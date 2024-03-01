@@ -277,22 +277,17 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
 }
 
 void conjugate_gradient_aligned2(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
-    std::cout << "starting conjugate gradient" << std::endl;
-    double alpha;
-    double beta;
-    double rr;
-    double rr_new;
-    double bb;
+    double alpha, beta, rr, rr_new, bb;
     cl_int err;
     int iters;
     size_t* offset = new size_t[device_number];
     size_t* partial_size = new size_t[device_number];
-    double** splitted_matrix = new double* [device_number];
-    double** splitted_Ap = new double* [device_number];
+    double** splitted_A = new double * [device_number];
+    double** splitted_Ap = new double * [device_number];
 
-    offset[0] = 0;
+    offset[0] = 0.0;
     for(int i = 1; i < device_number; i++) {
-        offset[i] = offset[i-1] + size/device_number;
+        offset[i] = size/device_number + offset[i-1];
     }
 
     for(int i = 0; i < device_number; i++) {
@@ -302,17 +297,19 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
             partial_size[device_number - 1] = size - offset[device_number - 1];
         }
     }
-    split_matrix(A, device_number, splitted_matrix, offset, partial_size, size);
 
     for(int i = 0; i < device_number; i++) {
-        splitted_Ap[i] = new double[partial_size[i]];
+        splitted_A[i] = new double [partial_size[i] * size];
+        splitted_Ap[i] = new double [partial_size[i]];
+        for(int j = 0; j < size * partial_size[i]; j++) {
+            splitted_A[i][j] = A[size*offset[i] + j];
+        }
     }
 
     cl_mem* device_A = new cl_mem[device_number];
     cl_mem* device_p = new cl_mem[device_number];
     cl_mem* device_Ap = new cl_mem[device_number];
 
-    double* Ap = new double[size];
     double* p = new double[size];
     double* r = new double[size];
 
@@ -325,61 +322,23 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
 
     bb = dot(b,b,size);
     rr = bb;
+
     for(int i = 0; i < device_number; i++) {
         device_A[i] = allocateDeviceReadOnly(&err, partial_size[i] * size, context);
         linkBufferToDevice(queues[i], device_A[i]);
-        writeToBuffer(queues[i], device_A[i], 0, partial_size[i] * size, splitted_matrix[i], 0);
-
+        writeToBuffer(queues[i], device_A[i], 0, partial_size[i] * size, splitted_A[i], 0);
         device_p[i] = allocateDevice(&err, size, context);
         linkBufferToDevice(queues[i], device_p[i]);
-
-
         device_Ap[i] = allocateDevice(&err, partial_size[i], context);
         linkBufferToDevice(queues[i], device_Ap[i]);
     }
 
-    for(iters = 1; iters <= max_iters; iters++) {
-        double tmp = 0;
+    for(iters = 1; iters <= max_iters;iters++) {
         for(int i = 0; i < device_number; i++) {
             writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
             matrix_vector_multiplication(splitted_Ap[i], 0, &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
         }
-
-        int current_loop_device = 0;
-        int current_loop_device_it = 0;
-        for(int i = 0; i < size; i++, current_loop_device_it++) {
-            if(offset[current_loop_device + 1] == i) {
-                current_loop_device++;
-                current_loop_device_it = 0;
-            }
-            tmp += p[i] * splitted_Ap[current_loop_device][current_loop_device_it];
-        }
-        axpby(alpha, p, 1.0, x, size);
-        current_loop_device_it = 0;
-        current_loop_device = 0;
-        for(int i = 0; i < size; i++) {
-            if(offset[current_loop_device + 1] == i) {
-                current_loop_device++;
-                current_loop_device_it = 0;
-            }
-            r[i] += -alpha * splitted_Ap[current_loop_device][current_loop_device_it];
-        }
-        rr_new = dot(r, r, size);
-        beta = rr_new / rr;
-        rr = rr_new;
-        if(std::sqrt(rr / bb) < tol) { break; }
-        axpby(1.0, r, beta, p, size);
     }
-
-    if(iters <= max_iters)
-    {
-        printf("Converged in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
-    }
-    else
-    {
-        printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(rr / bb));
-    }
-    std::cout << "finished conjugate gradient" << std::endl;
 }
 
 void conjugate_gradient(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
