@@ -254,6 +254,10 @@ void conjugate_gradient(const double* A, const double* b, double* x, size_t size
 void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list) {
     std::ifstream input_file;
     input_file.open(path);
+    if(!input_file.is_open()) {
+        std::cout << "error in opening the file" << std::endl;
+        exit(1);
+    }
     size_t length;
     unsigned char* buffer;
     input_file.seekg (0, std::ios::end);
