@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include <math.h>
+#include <omp.h>
 
 #define MAX_PLATFORM 10
 #define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
@@ -334,44 +335,53 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
         device_Ap[i] = allocateDevice(&err, partial_size[i], context);
         linkBufferToDevice(queues[i], device_Ap[i]);
     }
+    int actual_iters;
 
-    for(iters = 1; iters <= max_iters;iters++) {
-        double tmp = 0.0;
-        for(int i = 0; i < device_number; i++) {
-            writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
-            matrix_vector_multiplication(splitted_Ap[i], 0, &(device_A[i]), &(device_p[i]), &(device_Ap[i]), partial_size[i], size, &(queues[i]), &(kernels[i]));
-        }
-
-        int current_loop_device = 0;
-        int current_loop_device_it = 0;
-        for(int i = 0; i < size; i++, current_loop_device_it++) {
-            if(current_loop_device + 1 != device_number && offset[current_loop_device + 1] == i) {
-                current_loop_device++;
-                current_loop_device_it = 0;
+#pragma omp parallel num_threads(device_number) default(none) firstprivate(iters) shared(actual_iters, max_iters, device_number, alpha, beta, rr_new, r, rr, bb, offset,x, tol) shared(queues, device_p, size, p, splitted_Ap, device_A, device_Ap, kernels, partial_size)
+    {
+        for (iters = 1; iters <= max_iters; iters++) {
+#pragma omp for
+            for (int i = 0; i < device_number; i++) {
+                writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
+                matrix_vector_multiplication(splitted_Ap[i], 0, &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
+                                             partial_size[i], size, &(queues[i]), &(kernels[i]));
             }
-            tmp += p[i] * splitted_Ap[current_loop_device][current_loop_device_it];
-        }
-        alpha = rr / tmp;
-        axpby(alpha, p, 1.0, x, size);
-        current_loop_device_it = 0;
-        current_loop_device = 0;
-        for(int i = 0; i < size; i++, current_loop_device_it++) {
-            if(current_loop_device + 1 != device_number && offset[current_loop_device + 1] == i) {
-                current_loop_device++;
+#pragma omp single
+            {
+                actual_iters = iters;
+                double tmp = 0.0;
+                int current_loop_device = 0;
+                int current_loop_device_it = 0;
+                for (int i = 0; i < size; i++, current_loop_device_it++) {
+                    if (current_loop_device + 1 != device_number && offset[current_loop_device + 1] == i) {
+                        current_loop_device++;
+                        current_loop_device_it = 0;
+                    }
+                    tmp += p[i] * splitted_Ap[current_loop_device][current_loop_device_it];
+                }
+                alpha = rr / tmp;
+                axpby(alpha, p, 1.0, x, size);
                 current_loop_device_it = 0;
+                current_loop_device = 0;
+                for (int i = 0; i < size; i++, current_loop_device_it++) {
+                    if (current_loop_device + 1 != device_number && offset[current_loop_device + 1] == i) {
+                        current_loop_device++;
+                        current_loop_device_it = 0;
+                    }
+                    r[i] += -alpha * splitted_Ap[current_loop_device][current_loop_device_it];
+                }
+                rr_new = dot(r, r, size);
+                beta = rr_new / rr;
+                rr = rr_new;
+                axpby(1.0, r, beta, p, size);
             }
-            r[i] += -alpha * splitted_Ap[current_loop_device][current_loop_device_it];
+            if (std::sqrt(rr / bb) < tol) { break; }
         }
-        rr_new = dot(r, r, size);
-        beta = rr_new / rr;
-        rr = rr_new;
-        if(std::sqrt(rr / bb) < tol) { break; }
-        axpby(1.0, r, beta, p, size);
     }
 
-    if(iters <= max_iters)
+    if(actual_iters <= max_iters)
     {
-        printf("Converged in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
+        printf("Converged in %d iterations, relative error is %e\n", actual_iters, std::sqrt(rr / bb));
     }
     else
     {
