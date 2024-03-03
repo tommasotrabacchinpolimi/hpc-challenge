@@ -96,9 +96,12 @@ public:
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             for (int i = 0; i < num_device; i++) {
                 writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
-                /*matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
+                if(rank == 1) {
+                    std::cout << "calling kernel with offset = "  << local_offset[i] << " and size = " << local_partial_size[i] << std::endl;
+                }
+                matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
                                              local_partial_size[i], size, &(queues[i]), &(kernels[i]));
-                                             */
+
             }
             MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
