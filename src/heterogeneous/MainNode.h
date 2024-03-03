@@ -22,6 +22,7 @@ public:
     void handshake() {
 
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+        max_size.resize(world_size);
         std::ifstream is;
         /*is.open(matrix_file_path, std::ios::binary);
         is.read((char*)&size,sizeof(size_t));
