@@ -26,7 +26,6 @@ public:
     }
 
     void handshake() {
-        //only for debug
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         //std::cout << "rank " << rank << "received size " << size << std::endl;
@@ -37,6 +36,7 @@ public:
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        std::cout << "completed handshake" << std::endl;
     }
 
     void compute() {
@@ -46,6 +46,8 @@ public:
         double** splitted_matrix = new double * [num_device];
         std::vector<size_t> local_offset(num_device);
         std::vector<size_t> local_partial_size(num_device);
+        std::cout << "compute started" << std::endl;
+
         local_offset[0] = 0;
         for(size_t i = 1; i < num_device; i++) {
             local_offset[i] = local_offset[i-1] + matrixData.partial_size/num_device;
@@ -68,6 +70,8 @@ public:
         cl_mem* device_A = new cl_mem[num_device];
         cl_mem* device_p = new cl_mem[num_device];
         cl_mem* device_Ap = new cl_mem[num_device];
+
+        std::cout << "starting cycle" << std::endl;
 
         for(int i = 0; i < num_device; i++) {
             device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
