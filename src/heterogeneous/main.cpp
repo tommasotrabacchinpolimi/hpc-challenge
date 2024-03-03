@@ -12,10 +12,12 @@ int main() {
     if(rank == 0) {
         MainNode mainNode("", "", 1000, 1e-12);
         mainNode.handshake();
+        mainNode.compute_conjugate_gradient();
     } else {
         FpgaAcceleratorNode fpgaNode;
         fpgaNode.setup();
         fpgaNode.handshake();
+        fpgaNode.compute();
     }
 
 
