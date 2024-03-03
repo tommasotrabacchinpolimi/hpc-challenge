@@ -26,6 +26,8 @@ public:
     }
 
     void handshake() {
+        //only for debug
+        num_device = 2;
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         std::cout << "rank " << rank << "received size " << size << std::endl;
