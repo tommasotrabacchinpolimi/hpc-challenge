@@ -81,6 +81,7 @@ public:
         std::vector<double> p(size);
         std::vector<double> Ap(size);
         r = rhs;
+        p = rhs;
         bb = dot(rhs,rhs,size);
         rr = bb;
 
