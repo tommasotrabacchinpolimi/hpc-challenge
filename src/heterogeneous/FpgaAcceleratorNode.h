@@ -40,7 +40,7 @@ public:
     }
 
     void compute() {
-        double* p = new (std::align_val_t(mem_alignment)) double[matrixData.partial_size];
+        double* p = new (std::align_val_t(mem_alignment)) double[size];
         double* Ap = new (std::align_val_t(mem_alignment)) double[matrixData.partial_size];
         //std::vector<std::vector<double>> splitted_matrix(num_device);
         double** splitted_matrix = new double * [num_device];
