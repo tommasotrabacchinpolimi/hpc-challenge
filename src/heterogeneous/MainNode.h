@@ -55,7 +55,6 @@ public:
         partial_size[world_size - 1] = size - offset[world_size - 1];
 
         for(int i = 1; i < world_size; i++) {
-            std::cout << "rank " << i << "has been assigned from " << offset[i] << " to " << offset[i] + partial_size[i] - 1 << " with quota :  " << quota[i] << std::endl;
         }
         MPI_Datatype matrixDataType;
         MPI_Type_contiguous(2, MPI_UNSIGNED_LONG, &matrixDataType);
@@ -89,18 +88,11 @@ public:
         for(auto& s : sol) {
             s = 0.0;
         }
-
-        for(int iters = 1; iters <= max_iters; iters++) {
+        int iters;
+        for(iters = 1; iters <= max_iters; iters++) {
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            std::cout << "completed broadcast " <<  iters << std::endl;
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                         (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            std::cout << "receiving... " << std::endl;
-            for(int i = 0; i <size; i++) {
-                std::cout << Ap[i] << ", ";
-            }
-            std::cout<<std::endl<<"over"<<std::endl;
-            std::cout << "completed gather " <<  iters << std::endl;
             alpha = rr / dot(p, Ap, size);
             axpby(alpha, p, 1.0, sol, size);
             axpby(-alpha, Ap, 1.0, r, size);
@@ -109,6 +101,15 @@ public:
             rr = rr_new;
             if(std::sqrt(rr / bb) < tol) { break; }
             axpby(1.0, r, beta, p, size);
+        }
+
+        if(iters <= max_iters)
+        {
+            printf("Converged in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
+        }
+        else
+        {
+            printf("Did not converge in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
         }
         MPI_Abort(MPI_COMM_WORLD, 0);
     }

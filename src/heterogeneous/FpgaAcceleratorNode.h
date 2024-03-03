@@ -34,7 +34,6 @@ public:
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        std::cout << "completed handshake" << std::endl;
     }
 
     void compute() {
@@ -44,7 +43,6 @@ public:
         double** splitted_matrix = new double * [num_device];
         std::vector<size_t> local_offset(num_device);
         std::vector<size_t> local_partial_size(num_device);
-        std::cout << "compute started" << std::endl;
 
         local_offset[0] = 0;
         for(size_t i = 1; i < num_device; i++) {
@@ -59,7 +57,6 @@ public:
                 local_partial_size[num_device - 1] = size - local_offset[num_device - 1];
             }
             splitted_matrix[i] = new double[local_partial_size[i] * size];
-            std::cout << "splitted matrix created " << std::endl;
 
         }
         for(size_t i = 0; i < num_device; i++) {
@@ -72,30 +69,21 @@ public:
         cl_mem* device_p = new cl_mem[num_device];
         cl_mem* device_Ap = new cl_mem[num_device];
 
-        std::cout << "starting cycle" << std::endl;
 
         for(int i = 0; i < num_device; i++) {
-            std::cout << "starting allocating" << std::endl;
 
             device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
-            std::cout << "allocating" << std::endl;
             linkBufferToDevice(queues[i], device_A[i]);
-            std::cout << "linking" << std::endl;
             writeToBuffer(queues[i], device_A[i], 0, local_partial_size[i] * size, splitted_matrix[i], 0);
-            std::cout << "writing" << std::endl;
 
-            std::cout << "device_A" << std::endl;
             device_p[i] = allocateDevice(&err, size, context);
             linkBufferToDevice(queues[i], device_p[i]);
-            std::cout << "device_p" << std::endl;
 
             device_Ap[i] = allocateDevice(&err, local_partial_size[i], context);
             linkBufferToDevice(queues[i], device_Ap[i]);
-            std::cout << "device_Ap" << std::endl;
 
         }
 
-        std::cout << "starting while loop" << std::endl;
 
         while(true) {
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -104,11 +92,6 @@ public:
                 matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
                                              local_partial_size[i], size, &(queues[i]), &(kernels[i]));
             }
-            std::cout << "sending... " << std::endl;
-            for(int i = 0; i < matrixData.partial_size; i++) {
-                std::cout << Ap[i] << ", ";
-            }
-            std::cout<<std::endl<<"over"<<std::endl;
             MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
     }
