@@ -89,6 +89,11 @@ public:
             std::cout << "completed broadcast " <<  iters << std::endl;
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[1])),
                         (&(offset[1])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            std::cout << "receiving... " << std::endl;
+            for(int i = 0; i <size; i++) {
+                std::cout << Ap[i] << ", ";
+            }
+            std::cout<<std::endl<<"over"<<std::endl;
             std::cout << "completed gather " <<  iters << std::endl;
             alpha = rr / dot(p, Ap, size);
             axpby(alpha, p, 1.0, sol, size);

@@ -40,9 +40,10 @@ public:
     }
 
     void compute() {
-        double* p = new (std::align_val_t(mem_alignment)) double[size * matrixData.partial_size];
-        double* Ap = new (std::align_val_t(mem_alignment)) double[size * matrixData.partial_size];
-        std::vector<std::vector<double>> splitted_matrix(num_device);
+        double* p = new (std::align_val_t(mem_alignment)) double[matrixData.partial_size];
+        double* Ap = new (std::align_val_t(mem_alignment)) double[matrixData.partial_size];
+        //std::vector<std::vector<double>> splitted_matrix(num_device);
+        double** splitted_matrix = new double * [num_device];
         std::vector<size_t> local_offset(num_device);
         std::vector<size_t> local_partial_size(num_device);
         local_offset[0] = 0;
@@ -56,7 +57,7 @@ public:
             } else {
                 local_partial_size[num_device - 1] = size - local_offset[num_device - 1];
             }
-            splitted_matrix[i].resize(local_partial_size[i] * size);
+            splitted_matrix[i] = new double[local_partial_size[i] * size];
         }
         for(size_t i = 0; i < num_device; i++) {
             for(size_t j = 0; j < size * local_partial_size[i]; j++) {
@@ -71,7 +72,7 @@ public:
         for(int i = 0; i < num_device; i++) {
             device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
             linkBufferToDevice(queues[i], device_A[i]);
-            writeToBuffer(queues[i], device_A[i], 0, local_partial_size[i] * size,reinterpret_cast<const double *>(&(splitted_matrix[i])), 0);
+            writeToBuffer(queues[i], device_A[i], 0, local_partial_size[i] * size, splitted_matrix[i], 0);
             device_p[i] = allocateDevice(&err, size, context);
             linkBufferToDevice(queues[i], device_p[i]);
             device_Ap[i] = allocateDevice(&err, local_partial_size[i], context);
@@ -86,6 +87,11 @@ public:
                 matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
                                              local_partial_size[i], size, &(queues[i]), &(kernels[i]));
             }
+            std::cout << "sending... " << std::endl;
+            for(int i = 0; i < matrixData.partial_size; i++) {
+                std::cout << Ap[i] << ", ";
+            }
+            std::cout<<std::endl<<"over"<<std::endl;
             MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
     }
