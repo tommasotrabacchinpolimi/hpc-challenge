@@ -93,9 +93,7 @@ public:
 
 
         while(true) {
-            if(rank == 1) {
-                std::cout << "loop" << std::endl;
-            }
+
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             for (int i = 0; i < num_device; i++) {
                 writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
