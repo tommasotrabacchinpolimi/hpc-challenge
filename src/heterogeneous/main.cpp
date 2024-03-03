@@ -14,7 +14,7 @@ int main() {
         mainNode.handshake();
     } else {
         FpgaAcceleratorNode fpgaNode;
-        fpgaNode.setup();
+        //fpgaNode.setup();
         fpgaNode.handshake();
     }
 
