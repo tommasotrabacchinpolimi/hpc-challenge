@@ -46,6 +46,8 @@ public:
         offset.resize(world_size);
         partial_size.resize(world_size);
         offset[1] = 0;
+        offset[0] = 0;
+        partial_size[0] = 0;
         for(int i = 2; i < world_size; i++) {
             offset[i] = offset[i-1] + std::min((size_t)(size*quota[i-1]), max_size[i-1]);
             partial_size[i-1] = std::min((size_t)(size*quota[i-1]), max_size[i-1]);
@@ -88,8 +90,8 @@ public:
         for(int iters = 1; iters <= max_iters; iters++) {
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             std::cout << "completed broadcast " <<  iters << std::endl;
-            MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[1])),
-                        (&(offset[1])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
+                        (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
             std::cout << "receiving... " << std::endl;
             for(int i = 0; i <size; i++) {
                 std::cout << Ap[i] << ", ";
