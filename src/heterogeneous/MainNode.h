@@ -87,8 +87,8 @@ public:
         for(int iters = 1; iters <= max_iters; iters++) {
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             std::cout << "completed broadcast " <<  iters << std::endl;
-            MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], reinterpret_cast<const int *>(&(partial_size[0])),
-                        reinterpret_cast<const int *>(&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], reinterpret_cast<const int *>(&(partial_size[1])),
+                        reinterpret_cast<const int *>(&(offset[1])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
             std::cout << "completed gather " <<  iters << std::endl;
             alpha = rr / dot(p, Ap, size);
             axpby(alpha, p, 1.0, sol, size);
