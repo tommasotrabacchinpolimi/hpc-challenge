@@ -53,8 +53,8 @@ public:
             std::cout << "partial size = " << matrixData.partial_size << " num device = " << num_device << std::endl;
             local_offset[i] = local_offset[i-1] + matrixData.partial_size/num_device;
             std::cout << "non aligned = " << local_offset[i] << std::endl;
-
-            local_offset[i] = (local_offset[i] * sizeof(double) + (local_offset[i] * sizeof(double))%mem_alignment)/sizeof(double);
+            std::cout << "correction = " << (local_offset[i] * sizeof(double))%mem_alignment << std::endl;
+            local_offset[i] = ( (local_offset[i] * sizeof(double)) + ((local_offset[i] * sizeof(double))%mem_alignment))/sizeof(double);
             std::cout << "offset " << i << " = " << local_offset[i] << std::endl;
         }
 
