@@ -14,10 +14,13 @@ add_executable(fpga_main src/fpga/main_fpga.cpp)
 add_executable(multi_fpga src/fpga/multi_fpga.cpp)
 add_executable(multi_node src/fpga/multi_node.cpp)
 add_executable(main_node src/heterogeneous/main.cpp)
+find_package(MPI REQUIRED)
+target_link_libraries(main_node MPI::MPI_CXX)
 set_target_properties(main PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+
 
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lOpenCL")

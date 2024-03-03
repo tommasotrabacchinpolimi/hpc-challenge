@@ -7,7 +7,7 @@
 
 #define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
 #define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
-#include "../src/heterogeneous/utils.h"
+#include "utils.h"
 #include <mpi.h>
 class FpgaAcceleratorNode {
 public:

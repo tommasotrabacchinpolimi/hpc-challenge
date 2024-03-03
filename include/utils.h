@@ -5,7 +5,7 @@
 #ifndef MATRIX_VECTOR_MULTIPLICATION_UTILS_H
 #define MATRIX_VECTOR_MULTIPLICATION_UTILS_H
 
-#include "../include/CL/cl.h"
+#include "../CL/cl.h"
 #include <iostream>
 #include <vector>
 #include <fstream>
