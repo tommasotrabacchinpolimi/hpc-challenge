@@ -51,8 +51,10 @@ public:
         local_offset[0] = 0;
         for(size_t i = 1; i < num_device; i++) {
             local_offset[i] = local_offset[i-1] + matrixData.partial_size/num_device;
-            local_offset[i] = (local_offset[i] * sizeof(double) + (local_offset[i] * sizeof(double))%mem_alignment)/sizeof(double)
+            local_offset[i] = (local_offset[i] * sizeof(double) + (local_offset[i] * sizeof(double))%mem_alignment)/sizeof(double);
+            std::cout << "offset " << i << " = " << local_offset[i] << std::endl;
         }
+
         for(size_t i = 0; i < num_device; i++) {
             if(i != num_device - 1) {
                 local_partial_size[i] = local_offset[i+1] - local_offset[i];
