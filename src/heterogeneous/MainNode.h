@@ -28,7 +28,7 @@ public:
         is.read((char*)&size,sizeof(size_t));
         is.close();
          */
-        size = 10;
+        size = 100;
 
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
