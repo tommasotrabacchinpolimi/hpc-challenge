@@ -66,7 +66,7 @@ public:
 
         MatrixData myMatrixData;//ignored
         MPI_Scatter(&matrixData[0], 1, matrixDataType, &myMatrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
-        //read_rhs();
+        read_rhs();
         sol.resize(size);
         read_and_send_matrix();
     }
@@ -103,6 +103,7 @@ public:
     }
 private:
 
+    /*
     void read_rhs() {
         int buff;
         std::ifstream is;
@@ -111,6 +112,14 @@ private:
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
     }
+     */
+    void read_rhs() {
+        rhs.resize(size);
+        for(auto& r : rhs) {
+            r = 1.0;
+        }
+    }
+
 
     void read_and_send_matrix() {
         std::vector<double> matrix(size * size);

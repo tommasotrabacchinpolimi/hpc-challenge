@@ -126,10 +126,8 @@ void init_cl(cl_uint index_platform,  cl_command_queue** queues, cl_context* con
     cl_uint number_platform_found;
     cl_platform_id* myp = (cl_platform_id*)malloc(MAX_PLATFORM*sizeof(cl_platform_id));
     check_cl(clGetPlatformIDs(MAX_PLATFORM, myp, &number_platform_found), "error in finding platforms");
-    std::cout << "found " << number_platform_found << "platforms" << std::endl;
     *mydev = (cl_device_id*)malloc(MAX_DEVICE * sizeof(cl_device_id));
     check_cl(clGetDeviceIDs(myp[index_platform], CL_DEVICE_TYPE_ACCELERATOR, MAX_DEVICE, *mydev, number_device_found), "error in finding devices");
-    std::cout << "got devices "  << std::endl;
 
     *context = clCreateContext(NULL, *number_device_found, *mydev, NULL, NULL, &err);
     check_cl(err, "error in creating the context");
