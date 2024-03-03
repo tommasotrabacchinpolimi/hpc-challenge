@@ -28,6 +28,7 @@ public:
     void handshake() {
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+        std::cout << "rank " << rank << "received size " << size << std::endl;
         size_t max_rows = max_memory / (size * sizeof (double));
         MPI_Gather(&max_rows, 1, MPI_UNSIGNED_LONG, &max_rows, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         MPI_Gather(&num_device, 1, MPI_UNSIGNED_LONG, &num_device, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
