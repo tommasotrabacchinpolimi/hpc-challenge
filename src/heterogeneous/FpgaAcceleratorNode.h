@@ -61,7 +61,7 @@ public:
             if(i != num_device - 1) {
                 local_partial_size[i] = local_offset[i+1] - local_offset[i];
             } else {
-                local_partial_size[num_device - 1] = size - local_offset[num_device - 1];
+                local_partial_size[num_device - 1] = matrixData.partial_size - local_offset[num_device - 1];
             }
             splitted_matrix[i] = new (std::align_val_t(mem_alignment)) double[local_partial_size[i] * size];
 
@@ -96,9 +96,6 @@ public:
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             for (int i = 0; i < num_device; i++) {
                 writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
-                if(rank == 1) {
-                    std::cout << "calling kernel with offset = "  << local_offset[i] << " and size = " << local_partial_size[i] << std::endl;
-                }
                 matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
                                              local_partial_size[i], size, &(queues[i]), &(kernels[i]));
 
