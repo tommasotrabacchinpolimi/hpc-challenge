@@ -34,6 +34,7 @@ public:
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        std::cout << "handshake completed" << std::endl;
     }
 
     void compute() {
