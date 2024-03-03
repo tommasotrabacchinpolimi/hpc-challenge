@@ -36,7 +36,7 @@ public:
         world_device_number.resize(world_size);
         world_device_number[0] = 0;
 
-        MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &world_device_number[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+        MPI_Gather(MPI_IN_PLACE, 1, MPI_UINT32_T, &world_device_number[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
         total_device_number = 0;
         for(int i = 1; i < world_size; i++) {
@@ -134,7 +134,7 @@ private:
     int world_size;
     std::vector<size_t> offset;
     std::vector<size_t> partial_size;
-    std::vector<size_t> world_device_number;
+    std::vector<uint32_t> world_device_number;
     std::vector<size_t> max_size;
     std::vector<double> rhs;
     std::vector<double> sol;
