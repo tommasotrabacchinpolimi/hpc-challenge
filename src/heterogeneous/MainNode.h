@@ -86,6 +86,9 @@ public:
         p = rhs;
         bb = dot(rhs,rhs,size);
         rr = bb;
+        for(auto& s : sol) {
+            s = 0.0;
+        }
 
         for(int iters = 1; iters <= max_iters; iters++) {
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
