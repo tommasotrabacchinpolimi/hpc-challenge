@@ -27,7 +27,6 @@ public:
 
     void handshake() {
         //only for debug
-        num_device = 2;
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         //std::cout << "rank " << rank << "received size " << size << std::endl;
@@ -38,14 +37,6 @@ public:
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        if(rank == 4) {
-            std::cout << "now rank " << rank << std::endl;
-            for(int i = 0; i < size * matrixData.partial_size; i++) {
-                std::cout << matrix[i] << " ";
-            }
-            std::cout << std::endl;
-        }
-        //std::cout << "rank " << rank << "in charge of rows from " << matrixData.offset << " to " << matrixData.offset + matrixData.partial_size << std::endl;
     }
 
     void compute() {
