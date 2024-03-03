@@ -39,7 +39,7 @@ public:
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        std::cout << "rank " << rank << "in charge of rows from " << matrixData.offset << " to " << matrixData.offset + matrixData.partial_size << std::endl;
+        //std::cout << "rank " << rank << "in charge of rows from " << matrixData.offset << " to " << matrixData.offset + matrixData.partial_size << std::endl;
     }
 
     void compute() {

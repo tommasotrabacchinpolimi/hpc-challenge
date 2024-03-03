@@ -52,9 +52,9 @@ public:
         }
         partial_size[world_size - 1] = size - offset[world_size - 1];
 
-        /*for(int i = 1; i < world_size; i++) {
+        for(int i = 1; i < world_size; i++) {
             std::cout << "rank " << i << "has been assigned from " << offset[i] << " to " << offset[i] + partial_size[i] - 1 << " with device number:  " << world_device_number[i] << std::endl;
-        }*/
+        }
         MPI_Datatype matrixDataType;
         MPI_Type_contiguous(2, MPI_UNSIGNED_LONG, &matrixDataType);
         MPI_Type_commit(&matrixDataType);
