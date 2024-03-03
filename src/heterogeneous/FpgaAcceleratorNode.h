@@ -50,12 +50,8 @@ public:
 
         local_offset[0] = 0;
         for(size_t i = 1; i < num_device; i++) {
-            std::cout << "partial size = " << matrixData.partial_size << " num device = " << num_device << std::endl;
             local_offset[i] = local_offset[i-1] + matrixData.partial_size/num_device;
-            std::cout << "non aligned = " << local_offset[i] << std::endl;
-            std::cout << "correction = " <<mem_alignment -  (local_offset[i] * sizeof(double))%mem_alignment << std::endl;
             local_offset[i] = ( (local_offset[i] * sizeof(double)) + (mem_alignment - ((local_offset[i] * sizeof(double))%mem_alignment)))/sizeof(double);
-            std::cout << "offset " << i << " = " << local_offset[i] << std::endl;
         }
 
         for(size_t i = 0; i < num_device; i++) {
@@ -84,12 +80,18 @@ public:
             device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
             linkBufferToDevice(queues[i], device_A[i]);
             writeToBuffer(queues[i], device_A[i], 0, local_partial_size[i] * size, splitted_matrix[i], 0);
+            std::cout << "device_A" << std::endl;
             device_p[i] = allocateDevice(&err, size, context);
             linkBufferToDevice(queues[i], device_p[i]);
+            std::cout << "device_p" << std::endl;
+
             device_Ap[i] = allocateDevice(&err, local_partial_size[i], context);
             linkBufferToDevice(queues[i], device_Ap[i]);
+            std::cout << "device_Ap" << std::endl;
+
         }
 
+        std::cout << "starting while loop" << std::endl;
 
         while(true) {
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
