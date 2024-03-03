@@ -53,6 +53,10 @@ public:
             local_offset[i] = ( (local_offset[i] * sizeof(double)) + (mem_alignment - ((local_offset[i] * sizeof(double))%mem_alignment)))/sizeof(double);
         }
 
+        if(rank == 2) {
+            std::cout << "offset: " <<  local_offset[1] << std::endl;
+        }
+
         for(size_t i = 0; i < num_device; i++) {
             if(i != num_device - 1) {
                 local_partial_size[i] = local_offset[i+1] - local_offset[i];
