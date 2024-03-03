@@ -108,7 +108,7 @@ private:
     }
 
     void read_and_send_matrix() {
-        std::vector<double> matrix(size);
+        std::vector<double> matrix(size * size);
         for(size_t i = 0; i < size * size; i++) {
             matrix[i] = 0.0;
         }
