@@ -12,9 +12,7 @@
 class FpgaAcceleratorNode {
 public:
     void setup() {
-        cl_command_queue* queues;
-        cl_context context;
-        cl_device_id* devices;
+
         cl_program program;
         init_cl(platform_index, &queues, &context, &devices, &num_device);
         kernels = new cl_kernel[num_device];
@@ -77,8 +75,10 @@ public:
         std::cout << "starting cycle" << std::endl;
 
         for(int i = 0; i < num_device; i++) {
+            std::cout << "starting allocating" << std::endl;
+
             device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
-            std::cerr << "allocating" << std::endl;
+            std::cout << "allocating" << std::endl;
             linkBufferToDevice(queues[i], device_A[i]);
             std::cout << "linking" << std::endl;
             writeToBuffer(queues[i], device_A[i], 0, local_partial_size[i] * size, splitted_matrix[i], 0);
