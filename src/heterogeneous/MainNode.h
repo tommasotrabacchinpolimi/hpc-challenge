@@ -47,13 +47,13 @@ public:
         partial_size.resize(world_size);
         offset[1] = 0;
         for(int i = 2; i < world_size; i++) {
-            offset[i] = offset[i-1] + std::min(size/total_device_number*world_device_number[i], max_size[i]);
-            partial_size[i-1] = std::min(size/total_device_number*world_device_number[i], max_size[i]);
+            offset[i] = offset[i-1] + std::min(size/(total_device_number/world_device_number[i]), max_size[i]);
+            partial_size[i-1] = std::min(size/(total_device_number/world_device_number[i]), max_size[i]);
         }
         partial_size[world_size - 1] = size - offset[world_size - 1];
 
         for(int i = 1; i < world_size; i++) {
-            std::cout << "rank " << i << "has been assigned from " << offset[i] << " to " << offset[i] + partial_size[i] << std::endl;
+            std::cout << "rank " << i << "has been assigned from " << offset[i] << " to " << offset[i] + partial_size[i] << " with device number:  " << world_device_number[i] << std::endl;
         }
         MPI_Datatype matrixDataType;
         MPI_Type_contiguous(2, MPI_UNSIGNED_LONG, &matrixDataType);
