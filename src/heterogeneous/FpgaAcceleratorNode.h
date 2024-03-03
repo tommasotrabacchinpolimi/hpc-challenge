@@ -78,8 +78,12 @@ public:
 
         for(int i = 0; i < num_device; i++) {
             device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
+            std::cout << "allocating" << std::endl;
             linkBufferToDevice(queues[i], device_A[i]);
+            std::cout << "linking" << std::endl;
             writeToBuffer(queues[i], device_A[i], 0, local_partial_size[i] * size, splitted_matrix[i], 0);
+            std::cout << "writing" << std::endl;
+
             std::cout << "device_A" << std::endl;
             device_p[i] = allocateDevice(&err, size, context);
             linkBufferToDevice(queues[i], device_p[i]);
