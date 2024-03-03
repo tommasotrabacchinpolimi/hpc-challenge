@@ -53,9 +53,7 @@ public:
             local_offset[i] = ( (local_offset[i] * sizeof(double)) + (mem_alignment - ((local_offset[i] * sizeof(double))%mem_alignment)))/sizeof(double);
         }
 
-        if(rank == 2) {
-            std::cout << "offset: " <<  local_offset[1] << std::endl;
-        }
+
 
         for(size_t i = 0; i < num_device; i++) {
             if(i != num_device - 1) {
@@ -97,6 +95,9 @@ public:
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             for (int i = 0; i < num_device; i++) {
                 writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
+                if(rank == 1) {
+                    std::cout << "calling kernel: " <<  local_offset[1] << " " << local_partial_size[1] << std::endl;
+                }
                 matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
                                              local_partial_size[i], size, &(queues[i]), &(kernels[i]));
 
