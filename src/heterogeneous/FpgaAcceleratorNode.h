@@ -95,7 +95,7 @@ private:
 
     std::string matrix_file_path;
     double* matrix;
-    int platform_index;
+    int platform_index = 1;
     cl_int err = 0;
     size_t max_memory = 2e30 * 16;
     size_t size;
