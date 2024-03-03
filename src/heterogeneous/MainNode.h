@@ -33,27 +33,27 @@ public:
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-        world_device_number.resize(world_size);
-        world_device_number[0] = 0;
 
-        MPI_Gather(MPI_IN_PLACE, 1, MPI_UINT32_T, &world_device_number[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-
-        total_device_number = 0;
-        for(int i = 1; i < world_size; i++) {
-            total_device_number += world_device_number[i];
+        size_t total_capacity = 0;
+        for(int i = 0; i < world_size; i++) {
+            total_capacity += max_size[i];
+        }
+        std::vector<double> quota(world_size);
+        for(int i = 0; i < world_size; i++) {
+            quota[i] = (double)max_size[i]/(double)total_capacity;
         }
 
         offset.resize(world_size);
         partial_size.resize(world_size);
         offset[1] = 0;
         for(int i = 2; i < world_size; i++) {
-            offset[i] = offset[i-1] + std::min(size/(total_device_number/world_device_number[i-1]), max_size[i-1]);
-            partial_size[i-1] = std::min(size/(total_device_number/world_device_number[i-1]), max_size[i-1]);
+            offset[i] = offset[i-1] + std::min((size_t)(size*quota[i-1]), max_size[i-1]);
+            partial_size[i-1] = std::min((size_t)(size*quota[i-1]), max_size[i-1]);
         }
         partial_size[world_size - 1] = size - offset[world_size - 1];
 
         for(int i = 1; i < world_size; i++) {
-            std::cout << "rank " << i << "has been assigned from " << offset[i] << " to " << offset[i] + partial_size[i] - 1 << " with device number:  " << world_device_number[i] << std::endl;
+            std::cout << "rank " << i << "has been assigned from " << offset[i] << " to " << offset[i] + partial_size[i] - 1 << " with quota :  " << quota[i] << std::endl;
         }
         MPI_Datatype matrixDataType;
         MPI_Type_contiguous(2, MPI_UNSIGNED_LONG, &matrixDataType);
@@ -134,7 +134,6 @@ private:
     int world_size;
     std::vector<size_t> offset;
     std::vector<size_t> partial_size;
-    std::vector<uint32_t> world_device_number;
     std::vector<size_t> max_size;
     std::vector<double> rhs;
     std::vector<double> sol;

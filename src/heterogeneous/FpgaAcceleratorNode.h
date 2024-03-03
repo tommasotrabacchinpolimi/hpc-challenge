@@ -33,7 +33,6 @@ public:
         //std::cout << "rank " << rank << "received size " << size << std::endl;
         size_t max_rows = max_memory / (size * sizeof (double));
         MPI_Gather(&max_rows, 1, MPI_UNSIGNED_LONG, &max_rows, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-        MPI_Gather(&num_device, 1, MPI_UINT32_T, &num_device, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         MPI_Type_contiguous(2, MPI_UNSIGNED_LONG, &matrixDataType);
         MPI_Type_commit(&matrixDataType);
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
