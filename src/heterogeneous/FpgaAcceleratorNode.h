@@ -51,7 +51,7 @@ public:
         local_offset[0] = 0;
         for(size_t i = 1; i < num_device; i++) {
             local_offset[i] = local_offset[i-1] + matrixData.partial_size/num_device;
-            local_offset[i] = local_offset[i] + local_offset[i] * sizeof(double) % mem_alignment;
+            local_offset[i] = (local_offset[i] * sizeof(double) + (local_offset[i] * sizeof(double))%mem_alignment)/sizeof(double)
         }
         for(size_t i = 0; i < num_device; i++) {
             if(i != num_device - 1) {
@@ -60,6 +60,8 @@ public:
                 local_partial_size[num_device - 1] = size - local_offset[num_device - 1];
             }
             splitted_matrix[i] = new double[local_partial_size[i] * size];
+            std::cout << "splitted matrix created " << std::endl;
+
         }
         for(size_t i = 0; i < num_device; i++) {
             for(size_t j = 0; j < size * local_partial_size[i]; j++) {
