@@ -86,7 +86,7 @@ public:
                 matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
                                              local_partial_size[i], size, &(queues[i]), &(kernels[i]));
             }
-            MPI_Gatherv(&Ap[0], matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
     }
 private:
