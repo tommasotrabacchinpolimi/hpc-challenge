@@ -71,7 +71,9 @@ public:
         }
 
         for(int i = 0; i < num_device; i++) {
-
+            if(rank == 0) {
+                std::cout << "allocating read only with size = " << local_partial_size[i] * size << std::endl;
+            }
             device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
             linkBufferToDevice(queues[i], device_A[i]);
             writeToBuffer(queues[i], device_A[i], 0, local_partial_size[i] * size, splitted_matrix[i], 0);
