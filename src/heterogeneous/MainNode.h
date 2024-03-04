@@ -151,6 +151,7 @@ private:
         int buff;
         is.read((char*)&buff,sizeof(int));
         size = buff;
+        rhs.resize(size);
         std::cout << "size is " << size << std::endl;
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
