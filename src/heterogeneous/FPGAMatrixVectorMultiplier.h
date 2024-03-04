@@ -5,7 +5,7 @@
 #ifndef MATRIX_VECTOR_MULTIPLICATION_FPGAMATRIXVECTORMULTIPLIER_H
 #define MATRIX_VECTOR_MULTIPLICATION_FPGAMATRIXVECTORMULTIPLIER_H
 #include "MatrixVectorMultiplier.h"
-
+#include "mpi.h"
 #include "utils.h"
 class FPGAMatrixVectorMultiplier : public MatrixVectorMultiplier{
 public:

@@ -3,7 +3,6 @@
 //
 
 #include "FPGAMatrixVectorMultiplier.h"
-#include "mpi.h"
 
 void FPGAMatrixVectorMultiplier::init() {
     cl_int err;
