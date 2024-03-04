@@ -217,7 +217,7 @@ private:
         is.open(matrix_file_path, std::ios::binary);
         is.read((char*)&buff, sizeof(int));
         is.read((char*)matrix, size * partial_size[0] * sizeof(double));
-        check_matrix(matrix, partial_size[0]);
+        check_matrix(matrix, partial_size[0], 0);
 
         for(int i = 1; i < world_size; i++) {
             is.read((char*)matrix_, size * partial_size[i] * sizeof(double));
