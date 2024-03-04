@@ -38,9 +38,7 @@ public:
             if(rank == 2) {
                 std::cout << "called broadcast" << std::endl;
             }
-            for (int i = 0; i < num_device; i++) {
-                accelerator.compute(p, Ap);
-            }
+            accelerator.compute(p, Ap);
             if(rank == 2) {
                 std::cout << "called gather" << std::endl;
             }
