@@ -20,12 +20,10 @@ public:
     MainNode(std::string  matrix_file_path, std::string  rhs_file_path, int max_iters, double tol) : matrix_file_path(std::move(matrix_file_path)), rhs_file_path(std::move(rhs_file_path)), max_iters(max_iters), tol(tol) {}
 
     void init() {
-        std::cout << "init" << std::endl;
 
         accelerator.init();
     }
     void handshake() {
-        std::cout << "handshake" << std::endl;
 
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         max_size.resize(world_size);
@@ -99,15 +97,11 @@ public:
         }
         int iters;
         for(iters = 1; iters <= max_iters; iters++) {
-            std::cout << "iteration " << iters << std::endl;
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            std::cout << "completed boradcast" << std::endl;
-            std::cout << "completed gather" << std::endl;
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                         (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
             accelerator.compute(p, Ap);
-            std::cout << "completed compute" << std::endl;
             alpha = rr / dot(p, Ap, size);
             axpby(alpha, p, 1.0, sol, size);
             axpby(-alpha, Ap, 1.0, r, size);
