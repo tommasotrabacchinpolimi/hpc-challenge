@@ -24,7 +24,7 @@ public:
 
     virtual void setMatrix(double* matrix_) = 0;
 
-    virtual ~MatrixVectorMultiplier() = 0;
+    virtual ~MatrixVectorMultiplier() = default;
 
 };
 
