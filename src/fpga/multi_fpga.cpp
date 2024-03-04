@@ -10,6 +10,7 @@
 #include <string>
 #include <math.h>
 #include <omp.h>
+#include <chrono>
 
 #define MAX_PLATFORM 10
 #define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
@@ -279,7 +280,6 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
 }
 
 void conjugate_gradient_aligned2(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
-    std::cout << "started conjugate gradient" << std::endl;
     double alpha, beta, rr, rr_new, bb;
     cl_int err;
     int iters;
@@ -387,7 +387,6 @@ void conjugate_gradient_aligned2(const double* A, const double* b, double* x, si
     {
         printf("Did not converge in %d iterations, relative error is %e\n", max_iters, std::sqrt(rr / bb));
     }
-    std::cout << "finished conjugate gradient" << std::endl;
 }
 
 void conjugate_gradient(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
@@ -529,12 +528,15 @@ int main() {
     for(int i = 0; i < number_device_required; i++) {
         kernels[i] = create_kernel(program, MATRIX_VECTOR_KERNEL_NAME, &err);
     }
+    auto start = std::chrono::high_resolution_clock::now();
     double* matrix;
     double* rhs;
     double* sol = new double[size];
     generate_matrix(size, &matrix);
     generate_rhs(size,1,  &rhs);
     conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
+    auto stop = std::chrono::high_resolution_clock::now();
+    long exe_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
 
 
 }

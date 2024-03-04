@@ -234,8 +234,8 @@ int main(int argc, char ** argv)
     printf("Usage: size max_iters rel_error\n");
     printf("\n");
 
-    int size = 1000;
-    int max_iters = 1000;
+    int size = 3000;
+    int max_iters = 3000;
     double rel_error = 1e-9;
     int serial_trials = 1;
     int parallel_trials = 0;
