@@ -77,7 +77,7 @@ public:
     }
 
     void compute_conjugate_gradient() {
-        std::cout << "starting to compute" << std::endl;
+        //std::cout << "starting to compute" << std::endl;
         double alpha;
         double beta;
         double rr;
@@ -87,7 +87,7 @@ public:
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[size];
-        std::cout << "check1" << std::endl;
+        //std::cout << "check1" << std::endl;
 
 
         r = rhs;
