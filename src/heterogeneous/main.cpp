@@ -172,8 +172,6 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     for(num_iters = 1; num_iters <= max_iters; num_iters++)
     {
         gemv(1.0, A, p, 0.0, Ap, size, size);
-        std::cout << std::endl;
-        std::cout << rr << std::endl;
         alpha = rr / dot(p, Ap, size);
         axpby(alpha, p, 1.0, x, size);
         axpby(-alpha, Ap, 1.0, r, size);
