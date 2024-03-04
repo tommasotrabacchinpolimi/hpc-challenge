@@ -15,6 +15,7 @@ add_executable(multi_fpga src/fpga/multi_fpga.cpp)
 add_executable(multi_node src/fpga/multi_node.cpp)
 add_executable(main_node src/heterogeneous/main.cpp src/heterogeneous/FPGAMatrixVectorMultiplier.cpp)
 add_executable(matrix_gen src/matrix_generator.cpp)
+add_executable(rhs_gen src/rhs_generator.cpp)
 find_package(MPI REQUIRED)
 target_link_libraries(main_node MPI::MPI_CXX)
 set_target_properties(main PROPERTIES
