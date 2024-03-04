@@ -186,7 +186,7 @@ private:
         std::cout << "maximum size is " << msize << std::endl;
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         std::cout << "partial size 0 is " << partial_size[0] << std::endl;
-        matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0]];
+        matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
         std::ifstream is;
         int buff;
         is.open(matrix_file_path, std::ios::binary);
