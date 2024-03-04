@@ -36,7 +36,7 @@ public:
          */
 
         read_rhs();
-        MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&size, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
         max_size[0] = max_memory / (size * sizeof(double));
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 

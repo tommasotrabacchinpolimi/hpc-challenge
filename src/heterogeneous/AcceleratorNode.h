@@ -15,7 +15,7 @@ public:
 
     void handshake() {
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&size, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
         size_t max_rows = max_memory / (size * sizeof (double));
         MPI_Gather(&max_rows, 1, MPI_UNSIGNED_LONG, &max_rows, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         MPI_Type_contiguous(2, MPI_UNSIGNED_LONG, &matrixDataType);
