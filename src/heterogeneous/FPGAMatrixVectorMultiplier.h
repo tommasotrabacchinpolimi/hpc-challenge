@@ -140,7 +140,7 @@ FPGAMatrixVectorMultiplier::~FPGAMatrixVectorMultiplier() {
     delete [] queues;
     delete [] devices;
     delete [] kernels;
-    delete[] matrix;
+    //delete[] matrix;
     for(int i = 0; i < num_device;i++) {
         delete [] splitted_matrix[i];
     }
