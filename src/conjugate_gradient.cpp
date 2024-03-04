@@ -234,11 +234,11 @@ int main(int argc, char ** argv)
     printf("Usage: size max_iters rel_error\n");
     printf("\n");
 
-    int size = 5;
+    int size = 1000;
     int max_iters = 1000;
     double rel_error = 1e-9;
     int serial_trials = 1;
-    int parallel_trials = 1;
+    int parallel_trials = 0;
     int blank_trials = 0;
     int threads_number = 1;
 
@@ -262,7 +262,7 @@ int main(int argc, char ** argv)
     double* matrix;
     double* rhs;
     generate_matrix(size, &matrix);
-    generate_rhs(size, 2.0, &rhs);
+    generate_rhs(size, 1.0, &rhs);
     auto* sol = new double[size];
     long serial_execution_time = 0;
     long parallel_execution_time = 0;
@@ -280,7 +280,11 @@ int main(int argc, char ** argv)
         long tmp;
         conjugate_gradients_parallel(matrix, rhs, sol, size, max_iters, rel_error, threads_number, &tmp);
         parallel_execution_time += tmp;
-        memset(sol, 0, sizeof(double) * size);
+        //memset(sol, 0, sizeof(double) * size);
+    }
+
+    for(int i = 0; i < size; i++) {
+        std::cout << i << " : " <<sol[i] << std::endl;
     }
 
     std::cout << "Serial average execution time: " << (double)serial_execution_time/serial_trials << std::endl;
