@@ -185,23 +185,19 @@ private:
     void read_and_send_matrix() {
         auto it = std::max_element(partial_size.begin(), partial_size.end());
         size_t msize = *it;
-        double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
+        double* matrix_ = new (std::align_val_t(mem_alignment)) double[size * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
         std::ifstream is;
         int buff;
         is.open(matrix_file_path, std::ios::binary);
         is.read((char*)&buff, sizeof(int));
-        is.read((char*)matrix_, size * partial_size[0] * sizeof(double));
-        for(int i = 0; i < size * partial_size[0]; i++) {
-            matrix[i] = matrix_[i];
-        }
+        is.read((char*)matrix, size * partial_size[0] * sizeof(double));
         for(int i = 1; i < world_size; i++) {
             is.read((char*)matrix_, size * partial_size[i] * sizeof(double));
             MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
         }
         is.close();
         delete[] matrix_;
-
 
     }
 
