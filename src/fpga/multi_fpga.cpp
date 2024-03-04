@@ -511,8 +511,8 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 
 int main() {
-    size_t size = 1001;
-    int max_iters = 1000;
+    size_t size = 3000;
+    int max_iters = 3000;
     double tol = 1e-12;
     cl_int err = 0;
     int number_device_required = 2;
