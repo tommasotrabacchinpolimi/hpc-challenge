@@ -23,16 +23,11 @@ public:
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        if(rank == 1) {
-            std::cout << "received matrix, with size = " << size << " and partial size = " << matrixData.partial_size << " first element is " << matrix[0]  << std::endl;
-        }
+
         accelerator.setSize(size);
         accelerator.setPartialSize(matrixData.partial_size);
         accelerator.setMatrix(matrix);
         accelerator.setup();
-        if(rank == 1) {
-            std::cout << "setup completed"<< std::endl;
-        }
     }
 
     void compute() {
