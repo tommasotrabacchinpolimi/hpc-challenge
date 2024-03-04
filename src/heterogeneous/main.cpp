@@ -262,6 +262,7 @@ int main() {
 
     std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
     std::cout << "serial execution time = " << execution_time_serial << std::endl;
+    MPI_Abort(MPI_COMM_WORLD, 0);
 
 
 

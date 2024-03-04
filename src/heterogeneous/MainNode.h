@@ -134,7 +134,7 @@ public:
         delete[] Ap;
         delete[] p;
 
-        MPI_Abort(MPI_COMM_WORLD, 0);
+        //MPI_Abort(MPI_COMM_WORLD, 0);
     }
 
     ~MainNode() {
