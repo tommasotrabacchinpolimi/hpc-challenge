@@ -72,9 +72,11 @@ public:
         accelerator.setPartialSize(myMatrixData.partial_size);
         accelerator.setMatrix(matrix);
         accelerator.setup();
+        std::cout << "completed setup" << std::endl;
     }
 
     void compute_conjugate_gradient() {
+        std::cout << "starting compute method" << std::endl;
         double alpha;
         double beta;
         double rr;
