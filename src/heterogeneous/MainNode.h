@@ -95,6 +95,7 @@ public:
             s = 0.0;
         }
         int iters;
+        std::cout << "main node strating computing loop" << std::endl;
         for(iters = 1; iters <= max_iters; iters++) {
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
