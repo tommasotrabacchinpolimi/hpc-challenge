@@ -61,7 +61,7 @@ void FPGAMatrixVectorMultiplier::setup() {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     cl_int err = 0;
     if(rank == 0) {
-        std::cout << "doing setup" << std::endl;
+        std::cout << "doing setup " << size << std::endl;
     }
 
     splitted_matrix = new double*[num_device];
