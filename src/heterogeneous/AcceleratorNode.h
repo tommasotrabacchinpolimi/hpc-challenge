@@ -50,7 +50,7 @@ private:
 
     double* matrix;
     size_t max_memory = 2e30 * 16;
-    size_t size;
+    int size;
     MPI_Datatype matrixDataType;
     size_t mem_alignment = 64;
     MatrixData matrixData;
