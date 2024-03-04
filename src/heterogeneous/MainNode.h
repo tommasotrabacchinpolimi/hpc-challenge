@@ -164,7 +164,7 @@ private:
      */
 
 
-
+/*
     void read_and_send_matrix() {
         std::vector<double> matrix_(size * size);
         for(size_t i = 0; i < size * size; i++) {
@@ -186,8 +186,27 @@ private:
             matrix[i] = matrix_[i];
         }
     }
+    */
 
-/*
+    void check_matrix(double* matrix, int nrows, int offset) {
+        std::vector<double> matrix_(size * size);
+        for(size_t i = 0; i < size * size; i++) {
+            matrix_[i] = 0.0;
+        }
+        for(size_t i = 0; i < size; i++) {
+            matrix_[i * size + i] = 2.0;
+            if(i != size-1) {
+                matrix_[(i + 1) * size + i] = -1;
+                matrix_[i * size + (i + 1)] = -1;
+            }
+        }
+        for(int i = 0; i < size * nrows; i++) {
+            if(matrix_[i + offset*size] != matrix[i]) {
+                std::cout << "matrices doesnt match " << matrix_[i] << " " << matrix[i] << std::endl;
+            }
+        }
+    }
+
     void read_and_send_matrix() {
         auto it = std::max_element(partial_size.begin(), partial_size.end());
         size_t msize = *it;
@@ -198,6 +217,8 @@ private:
         is.open(matrix_file_path, std::ios::binary);
         is.read((char*)&buff, sizeof(int));
         is.read((char*)matrix, size * partial_size[0] * sizeof(double));
+        check_matrix(matrix, partial_size[0]);
+
         for(int i = 1; i < world_size; i++) {
             is.read((char*)matrix_, size * partial_size[i] * sizeof(double));
             MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
@@ -206,7 +227,6 @@ private:
         delete[] matrix_;
 
     }
-    */
 
     std::string matrix_file_path;
     std::string rhs_file_path;
