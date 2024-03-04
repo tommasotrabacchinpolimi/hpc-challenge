@@ -2,7 +2,6 @@
 // Created by tomma on 03/03/2024.
 //
 
-#include "FpgaAcceleratorNode.h"
 #include "MainNode.h"
 #include "FPGAMatrixVectorMultiplier.h"
 #include "AcceleratorNode.h"

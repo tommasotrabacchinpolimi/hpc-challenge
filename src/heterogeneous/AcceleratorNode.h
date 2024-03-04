@@ -41,15 +41,16 @@ public:
         }
     }
 
+    ~AcceleratorNode() {
+        delete[] matrix;
+    }
+
 private:
     Accelerator accelerator;
 
     double* matrix;
-    int platform_index = 1;
-    cl_int err = 0;
     size_t max_memory = 2e30 * 16;
     size_t size;
-    cl_uint num_device;
     MPI_Datatype matrixDataType;
     size_t mem_alignment = 64;
     MatrixData matrixData;

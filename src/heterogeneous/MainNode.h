@@ -12,6 +12,8 @@
 #include <mpi.h>
 #include <math.h>
 #include "utils.h"
+#include <algorithm>
+
 
 template<typename Accelerator>
 class MainNode {
@@ -120,11 +122,19 @@ public:
         {
             printf("Did not converge in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
         }
+
+        delete[] Ap;
+        delete[] p;
+
         MPI_Abort(MPI_COMM_WORLD, 0);
+    }
+
+    ~MainNode() {
+        delete[] matrix;
     }
 private:
 
-    /*
+
     void read_rhs() {
         int buff;
         std::ifstream is;
@@ -133,15 +143,18 @@ private:
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
     }
-     */
+
+    /*
     void read_rhs() {
         rhs.resize(size);
         for(auto& r : rhs) {
             r = 1.0;
         }
     }
+     */
 
 
+    /*
     void read_and_send_matrix() {
         std::vector<double> matrix_(size * size);
         for(size_t i = 0; i < size * size; i++) {
@@ -163,6 +176,29 @@ private:
             matrix[i] = matrix_[i];
         }
     }
+     */
+
+    void read_and_send_matrix() {
+        auto it = std::max_element(partial_size.begin(), partial_size.end());
+        size_t msize = *it;
+        double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize];
+        matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0]];
+        std::ifstream is;
+        int buff;
+        is.open(matrix_file_path, std::ios::binary);
+        is.read((char*)&buff, sizeof(int));
+        for(int i = 1; i < world_size; i++) {
+            is.read((char*)matrix_, partial_size[i] * sizeof(double));
+            MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+        }
+        is.close();
+
+        for(int i = 0; i < size * myMatrixData.partial_size; i++) {
+            matrix[i] = matrix_[i];
+        }
+        delete[] matrix_;
+
+    }
 
     std::string matrix_file_path;
     std::string rhs_file_path;
@@ -183,6 +219,7 @@ private:
 
 
     Accelerator accelerator;
+
 };
 
 
