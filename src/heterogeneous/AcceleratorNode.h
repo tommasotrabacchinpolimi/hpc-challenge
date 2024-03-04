@@ -35,16 +35,17 @@ public:
         while(true) {
 
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            if(rank == 1) {
+            if(rank == 2) {
                 std::cout << "called broadcast" << std::endl;
             }
             for (int i = 0; i < num_device; i++) {
                 accelerator.compute(p, Ap);
             }
-            MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            if(rank == 1) {
+            if(rank == 2) {
                 std::cout << "called gather" << std::endl;
             }
+            MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
         }
     }
 

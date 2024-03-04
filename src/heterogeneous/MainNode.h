@@ -102,9 +102,10 @@ public:
             std::cout << "iteration " << iters << std::endl;
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             std::cout << "completed boradcast" << std::endl;
+            std::cout << "completed gather" << std::endl;
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                         (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            std::cout << "completed gather" << std::endl;
+
             accelerator.compute(p, Ap);
             std::cout << "completed compute" << std::endl;
             alpha = rr / dot(p, Ap, size);
