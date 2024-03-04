@@ -184,7 +184,7 @@ private:
         auto it = std::max_element(partial_size.begin(), partial_size.end());
         size_t msize = *it;
         std::cout << "maximum size is " << msize << std::endl;
-        double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize];
+        double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         std::cout << "partial size 0 is " << partial_size[0] << std::endl;
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0]];
         std::ifstream is;
