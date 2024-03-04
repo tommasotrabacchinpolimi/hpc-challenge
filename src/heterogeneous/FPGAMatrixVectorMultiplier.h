@@ -85,6 +85,9 @@ void FPGAMatrixVectorMultiplier::setup() {
         } else {
             local_partial_size[num_device - 1] = partial_size - local_offset[num_device - 1];
         }
+        if(rank == 0) {
+            std::cout << "allocating splitted matrix " << local_partial_size[i] << " " << size << std::endl;
+        }
         splitted_matrix[i] = new (std::align_val_t(mem_alignment)) double[local_partial_size[i] * size];
 
 
