@@ -26,7 +26,7 @@ public:
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         cl_int err;
         if(rank == 0) {
-            std::cout << "device number = " << rank << std::endl;
+            std::cout << "device number = " << num_device << std::endl;
         }
         splitted_matrix = new double*[num_device];
         local_offset.resize(num_device);
@@ -41,6 +41,8 @@ public:
         }
         if(rank == 0) {
             std::cout << "check2" << std::endl;
+            std::cout << "partial size = " << partial_size  << std::endl;
+
         }
         for(size_t i = 0; i < num_device; i++) {
             if(i != num_device - 1) {
