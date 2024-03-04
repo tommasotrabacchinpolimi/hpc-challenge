@@ -198,11 +198,10 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     }
 }
 
-bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out)
+bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out)
 {
     double * matrix;
     size_t num_rows;
-    size_t num_cols;
 
     FILE * file = fopen(filename, "rb");
     if(file == nullptr)
@@ -212,13 +211,34 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t *
     }
 
     fread(&num_rows, sizeof(size_t), 1, file);
-    fread(&num_cols, sizeof(size_t), 1, file);
-    matrix = new double[num_rows * num_cols];
-    fread(matrix, sizeof(double), num_rows * num_cols, file);
+    matrix = new double[num_rows * num_rows];
+    fread(matrix, sizeof(double), num_rows * num_rows, file);
 
     *matrix_out = matrix;
     *num_rows_out = num_rows;
-    *num_cols_out = num_cols;
+
+    fclose(file);
+
+    return true;
+}
+bool read_rhs_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out)
+{
+    double * matrix;
+    size_t num_rows;
+
+    FILE * file = fopen(filename, "rb");
+    if(file == nullptr)
+    {
+        fprintf(stderr, "Cannot open output file\n");
+        return false;
+    }
+
+    fread(&num_rows, sizeof(size_t), 1, file);
+    matrix = new double[num_rows];
+    fread(matrix, sizeof(double), num_rows, file);
+
+    *matrix_out = matrix;
+    *num_rows_out = num_rows;
 
     fclose(file);
 
@@ -232,6 +252,22 @@ int main() {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     long execution_time_fpga, execution_time_serial;
+
+    double* matrix;
+    double* rhs;
+    size_t size;
+    size_t tmp;
+    auto start_serial = std::chrono::high_resolution_clock::now();
+    read_matrix_from_file("matrix.bin", &matrix, &size);
+    read_rhs_from_file("rhs.bin", &rhs, &tmp);
+    double* sol = new double[size];
+    conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
+    auto stop_serial = std::chrono::high_resolution_clock::now();
+    execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
+
+    std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
+    std::cout << "serial execution time = " << execution_time_serial << std::endl;
+
     if(rank == 0) {
         auto start_fpga = std::chrono::high_resolution_clock::now();
         MainNode<FPGAMatrixVectorMultiplier> mainNode("matrix.bin", "rhs.bin", 3000, 1e-12);
@@ -248,20 +284,7 @@ int main() {
         acceleratorNode.compute();
     }
 
-    double* matrix;
-    double* rhs;
-    size_t size;
-    size_t tmp;
-    auto start_serial = std::chrono::high_resolution_clock::now();
-    read_matrix_from_file("matrix.bin", &matrix, &size, &size);
-    read_matrix_from_file("rhs.bin", &rhs, &tmp, &tmp);
-    double* sol = new double[size];
-    conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
-    auto stop_serial = std::chrono::high_resolution_clock::now();
-    execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
 
-    std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
-    std::cout << "serial execution time = " << execution_time_serial << std::endl;
     MPI_Abort(MPI_COMM_WORLD, 0);
 
 
