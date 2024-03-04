@@ -141,7 +141,7 @@ private:
         rhs.resize(size);
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
-        std::cout << "Done reading rhs" << std::endl;
+        std::cout << "Done reading rhs, size = " << size << std::endl;
     }
 
     /*
