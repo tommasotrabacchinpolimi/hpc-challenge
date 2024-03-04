@@ -69,6 +69,7 @@ public:
 
         MPI_Scatter(&matrixData[0], 1, matrixDataType, &myMatrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         sol.resize(size);
+        std::cout << "reading the matrix" << std::endl;
         read_and_send_matrix();
         std::cout << "done reading the matrix" << std::endl;
         accelerator.setSize(size);
