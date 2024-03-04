@@ -265,8 +265,7 @@ int main() {
     auto stop_serial = std::chrono::high_resolution_clock::now();
     execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
 
-    std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
-    std::cout << "serial execution time = " << execution_time_serial << std::endl;
+
 
     if(rank == 0) {
         auto start_fpga = std::chrono::high_resolution_clock::now();
@@ -284,6 +283,8 @@ int main() {
         acceleratorNode.compute();
     }
 
+    std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
+    std::cout << "serial execution time = " << execution_time_serial << std::endl;
 
     MPI_Abort(MPI_COMM_WORLD, 0);
 
