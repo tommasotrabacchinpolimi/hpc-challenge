@@ -60,7 +60,7 @@ public:
         MPI_Type_commit(&matrixDataType);
 
         std::vector<MatrixData> matrixData(world_size);
-        for(int i = 1; i < world_size; i++) {
+        for(int i = 0; i < world_size; i++) {
             matrixData[i] = {(size_t)offset[i], (size_t)partial_size[i]};
         }
 
