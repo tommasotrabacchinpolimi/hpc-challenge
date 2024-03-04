@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 
-double* matrix_generator(size_t size) {
+double* matrix_generator(int size) {
     double* matrix_ = new double[size * size];
     for(size_t i = 0; i < size * size; i++) {
         matrix_[i] = 0.0;
@@ -23,7 +23,7 @@ double* matrix_generator(size_t size) {
 
 
 int main(int argc, char ** argv) {
-    size_t size = atoi(argv[1]);
+    int size = atoi(argv[1]);
     double* matrix = matrix_generator(size);
     std::cout << "Generating a " << size << " x " << size << " matrix";
     std::ofstream fs("matrix.bin", std::ios::out | std::ios::binary | std::ios::app);
