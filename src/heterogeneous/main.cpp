@@ -5,7 +5,6 @@
 #include "MainNode.h"
 #include "FPGAMatrixVectorMultiplier.h"
 #include "AcceleratorNode.h"
-#include "FPGAMatrixVectorMultiplier.cpp"
 
 int main() {
     MPI_Init(nullptr, nullptr);
