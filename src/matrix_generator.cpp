@@ -26,7 +26,7 @@ int main(int argc, char ** argv) {
     int size = atoi(argv[1]);
     double* matrix = matrix_generator(size);
     std::cout << "Generating a " << size << " x " << size << " matrix";
-    std::ofstream fs("matrix.bin", std::ios::out | std::ios::binary | std::ios::app);
+    std::ofstream fs("matrix.bin", std::ios::out | std::ios::binary);
     fs.write((char*)&size, sizeof(int));
     fs.write((char*)matrix, size * size * sizeof(double));
     std::cout << "Completed generation of the matrix" << std::endl;
