@@ -72,7 +72,7 @@ public:
         sol.resize(size);
         read_and_send_matrix();
         accelerator.setSize(size);
-        accelerator.setPartialSize(myMatrixData.partial_size);
+        accelerator.setPartialSize(matrixData[0].partial_size);
         accelerator.setMatrix(matrix);
         std::cout << "init setup" << std::endl;
         accelerator.setup();
