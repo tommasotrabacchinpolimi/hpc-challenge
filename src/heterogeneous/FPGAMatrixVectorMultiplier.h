@@ -141,7 +141,7 @@ void FPGAMatrixVectorMultiplier::compute(double *p, double *Ap) {for (int i = 0;
 }
 
 void FPGAMatrixVectorMultiplier::setSize(size_t size_) {
-    this->partial_size = size_;
+    this->size = size_;
 }
 
 void FPGAMatrixVectorMultiplier::setPartialSize(size_t size_) {
