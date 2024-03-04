@@ -206,7 +206,7 @@ private:
 
     std::string matrix_file_path;
     std::string rhs_file_path;
-    size_t size;
+    int size;
     int world_size;
     std::vector<int> offset;
     std::vector<int> partial_size;
