@@ -537,6 +537,6 @@ int main() {
     conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
     auto stop = std::chrono::high_resolution_clock::now();
     long exe_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-
+    std::cout << exe_time << std::endl;
 
 }
