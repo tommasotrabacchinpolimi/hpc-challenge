@@ -253,28 +253,34 @@ int main() {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     long execution_time_fpga, execution_time_serial;
 
-    double* matrix;
-    double* rhs;
-    size_t size;
-    size_t tmp;
-    auto start_serial = std::chrono::high_resolution_clock::now();
-    read_matrix_from_file("matrix.bin", &matrix, &size);
-    read_rhs_from_file("rhs.bin", &rhs, &tmp);
-    double* sol = new double[size];
-    conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
-    auto stop_serial = std::chrono::high_resolution_clock::now();
-    execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
 
 
-    std::cout << "starting fpga version" << std::endl;
+
     if(rank == 0) {
+        double* matrix;
+        double* rhs;
+        size_t size;
+        size_t tmp;
+        auto start_serial = std::chrono::high_resolution_clock::now();
+        read_matrix_from_file("matrix.bin", &matrix, &size);
+        read_rhs_from_file("rhs.bin", &rhs, &tmp);
+        double* sol = new double[size];
+        conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
+        auto stop_serial = std::chrono::high_resolution_clock::now();
+        execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
         auto start_fpga = std::chrono::high_resolution_clock::now();
+        std::cout << "starting fpga version" << std::endl;
         MainNode<FPGAMatrixVectorMultiplier> mainNode("matrix.bin", "rhs.bin", 3000, 1e-12);
         mainNode.init();
         mainNode.handshake();
         mainNode.compute_conjugate_gradient();
         auto stop_fpga = std::chrono::high_resolution_clock::now();
         execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
+
+        std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
+        std::cout << "serial execution time = " << execution_time_serial << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, 0);
+
 
     } else {
         AcceleratorNode<FPGAMatrixVectorMultiplier> acceleratorNode;
@@ -283,10 +289,8 @@ int main() {
         acceleratorNode.compute();
     }
 
-    std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
-    std::cout << "serial execution time = " << execution_time_serial << std::endl;
 
-    MPI_Abort(MPI_COMM_WORLD, 0);
+
 
 
 
