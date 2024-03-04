@@ -265,6 +265,7 @@ int main() {
         read_matrix_from_file("matrix.bin", &matrix, &size);
         read_rhs_from_file("rhs.bin", &rhs, &tmp);
         double* sol = new double[size];
+        std::cout << "starting serial version" << std::endl;
         conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
         auto stop_serial = std::chrono::high_resolution_clock::now();
         execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
