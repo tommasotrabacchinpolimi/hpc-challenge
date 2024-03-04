@@ -29,7 +29,7 @@ public:
 
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         max_size.resize(world_size);
-        std::ifstream is;
+        //std::ifstream is;
         /*is.open(matrix_file_path, std::ios::binary);
         is.read((char*)&size,sizeof(size_t));
         is.close();
@@ -37,8 +37,12 @@ public:
 
         read_rhs();
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+        std::cout << "broadcast completed" << std::endl;
+
         max_size[0] = max_memory / (size * sizeof(double));
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+        std::cout << "gather completed" << std::endl;
+
 
         size_t total_capacity = 0;
         for(int i = 0; i < world_size; i++) {
@@ -68,6 +72,8 @@ public:
         }
 
         MPI_Scatter(&matrixData[0], 1, matrixDataType, &myMatrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
+        std::cout << "scatter completed" << std::endl;
+
         sol.resize(size);
         std::cout << "reading the matrix" << std::endl;
         read_and_send_matrix();
