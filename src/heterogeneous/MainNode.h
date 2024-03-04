@@ -192,7 +192,7 @@ private:
         is.open(matrix_file_path, std::ios::binary);
         is.read((char*)&buff, sizeof(int));
         for(int i = 1; i < world_size; i++) {
-            is.read((char*)matrix_, partial_size[i] * sizeof(double));
+            is.read((char*)matrix_, size * partial_size[i] * sizeof(double));
             MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
         }
         is.close();
