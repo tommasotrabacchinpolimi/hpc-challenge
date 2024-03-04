@@ -20,9 +20,12 @@ public:
     MainNode(std::string  matrix_file_path, std::string  rhs_file_path, int max_iters, double tol) : matrix_file_path(std::move(matrix_file_path)), rhs_file_path(std::move(rhs_file_path)), max_iters(max_iters), tol(tol) {}
 
     void init() {
+        std::cout << "init" << std::endl;
+
         accelerator.init();
     }
     void handshake() {
+        std::cout << "handshake" << std::endl;
 
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         max_size.resize(world_size);
@@ -71,6 +74,7 @@ public:
         accelerator.setSize(size);
         accelerator.setPartialSize(myMatrixData.partial_size);
         accelerator.setMatrix(matrix);
+        std::cout << "init setup" << std::endl;
         accelerator.setup();
         std::cout << "completed setup" << std::endl;
     }
