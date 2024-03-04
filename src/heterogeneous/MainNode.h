@@ -139,9 +139,11 @@ private:
         int buff;
         std::ifstream is;
         is.open(rhs_file_path, std::ios::binary);
-        is.read((char*)&buff,sizeof(size_t));
+        is.read((char*)&buff,sizeof(int));
+        rhs.resize(buff);
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
+        std::cout << "Done reading rhs" << std::endl;
     }
 
     /*
@@ -197,6 +199,8 @@ private:
             matrix[i] = matrix_[i];
         }
         delete[] matrix_;
+
+        std::cout << "Done reading and sending matrix" << std::endl;
 
     }
 
