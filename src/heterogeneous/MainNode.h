@@ -164,7 +164,7 @@ private:
      */
 
 
-    /*
+
     void read_and_send_matrix() {
         std::vector<double> matrix_(size * size);
         for(size_t i = 0; i < size * size; i++) {
@@ -186,8 +186,8 @@ private:
             matrix[i] = matrix_[i];
         }
     }
-     */
 
+/*
     void read_and_send_matrix() {
         auto it = std::max_element(partial_size.begin(), partial_size.end());
         size_t msize = *it;
@@ -206,6 +206,7 @@ private:
         delete[] matrix_;
 
     }
+    */
 
     std::string matrix_file_path;
     std::string rhs_file_path;
