@@ -143,7 +143,6 @@ private:
         rhs.resize(size);
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
-        std::cout << "Done reading rhs, size = " << size << std::endl;
     }
 
     /*
@@ -183,9 +182,7 @@ private:
     void read_and_send_matrix() {
         auto it = std::max_element(partial_size.begin(), partial_size.end());
         size_t msize = *it;
-        std::cout << "maximum size is " << msize << std::endl;
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
-        std::cout << "partial size 0 is " << partial_size[0] << std::endl;
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
         std::ifstream is;
         int buff;
@@ -202,7 +199,6 @@ private:
         is.close();
         delete[] matrix_;
 
-        std::cout << "Done reading and sending matrix" << std::endl;
 
     }
 
