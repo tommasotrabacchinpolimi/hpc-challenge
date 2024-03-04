@@ -22,17 +22,26 @@ public:
     }
 
     void setup() {
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         cl_int err;
+        if(rank == 0) {
+            std::cout << "device number = " << rank << std::endl;
+        }
         splitted_matrix = new double*[num_device];
         local_offset.resize(num_device);
         local_partial_size.resize(num_device);
-
+        if(rank == 0) {
+            std::cout << "check1" << std::endl;
+        }
         local_offset[0] = 0;
         for(size_t i = 1; i < num_device; i++) {
             local_offset[i] = local_offset[i-1] + partial_size/num_device;
             local_offset[i] = ( (local_offset[i] * sizeof(double)) + (mem_alignment - ((local_offset[i] * sizeof(double))%mem_alignment)))/sizeof(double);
         }
-
+        if(rank == 0) {
+            std::cout << "check2" << std::endl;
+        }
         for(size_t i = 0; i < num_device; i++) {
             if(i != num_device - 1) {
                 local_partial_size[i] = local_offset[i+1] - local_offset[i];
@@ -41,6 +50,9 @@ public:
             }
             splitted_matrix[i] = new (std::align_val_t(mem_alignment)) double[local_partial_size[i] * size];
 
+        }
+        if(rank == 0) {
+            std::cout << "check3" << std::endl;
         }
         for(size_t i = 0; i < num_device; i++) {
             for(size_t j = 0; j < size * local_partial_size[i]; j++) {
@@ -51,6 +63,10 @@ public:
         device_A = new cl_mem[num_device];
         device_p = new cl_mem[num_device];
         device_Ap = new cl_mem[num_device];
+
+        if(rank == 0) {
+            std::cout << "check4" << std::endl;
+        }
 
         for(int i = 0; i < num_device; i++) {
 
