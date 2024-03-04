@@ -34,8 +34,8 @@ public:
         is.read((char*)&size,sizeof(size_t));
         is.close();
          */
-        size = 100;
 
+        read_rhs();
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         max_size[0] = max_memory / (size * sizeof(double));
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
@@ -68,7 +68,6 @@ public:
         }
 
         MPI_Scatter(&matrixData[0], 1, matrixDataType, &myMatrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
-        read_rhs();
         sol.resize(size);
         read_and_send_matrix();
         accelerator.setSize(size);
@@ -136,11 +135,10 @@ private:
 
 
     void read_rhs() {
-        int buff;
         std::ifstream is;
         is.open(rhs_file_path, std::ios::binary);
-        is.read((char*)&buff,sizeof(int));
-        rhs.resize(buff);
+        is.read((char*)&size,sizeof(int));
+        rhs.resize(size);
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
         std::cout << "Done reading rhs" << std::endl;
