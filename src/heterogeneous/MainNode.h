@@ -74,13 +74,10 @@ public:
         accelerator.setSize(size);
         accelerator.setPartialSize(matrixData[0].partial_size);
         accelerator.setMatrix(matrix);
-        std::cout << "init setup" << std::endl;
         accelerator.setup();
-        std::cout << "completed setup" << std::endl;
     }
 
     void compute_conjugate_gradient() {
-        std::cout << "starting compute method" << std::endl;
         double alpha;
         double beta;
         double rr;
@@ -88,7 +85,6 @@ public:
         double bb;
         std::vector<double> r(size);
 
-        std::cout << "size = " << size << " partial_size = " << myMatrixData.partial_size << std::endl;
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[myMatrixData.partial_size];
 
@@ -102,8 +98,8 @@ public:
             s = 0.0;
         }
         int iters;
-        std::cout << "main node strating computing loop" << std::endl;
         for(iters = 1; iters <= max_iters; iters++) {
+            std::cout << "iteration " << iters << std::endl;
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                         (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
