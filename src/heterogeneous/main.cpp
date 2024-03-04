@@ -196,10 +196,10 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     }
 }
 
-bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out)
+bool read_matrix_from_file(const char * filename, double ** matrix_out, int * num_rows_out)
 {
     double * matrix;
-    size_t num_rows;
+    int num_rows;
 
     FILE * file = fopen(filename, "rb");
     if(file == nullptr)
@@ -208,7 +208,7 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t *
         return false;
     }
 
-    fread(&num_rows, sizeof(size_t), 1, file);
+    fread(&num_rows, sizeof(int), 1, file);
     matrix = new double[num_rows * num_rows];
     fread(matrix, sizeof(double), num_rows * num_rows, file);
 
@@ -219,10 +219,10 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t *
 
     return true;
 }
-bool read_rhs_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out)
+bool read_rhs_from_file(const char * filename, double ** matrix_out, int * num_rows_out)
 {
     double * matrix;
-    size_t num_rows;
+    int num_rows;
 
     FILE * file = fopen(filename, "rb");
     if(file == nullptr)
@@ -231,7 +231,7 @@ bool read_rhs_from_file(const char * filename, double ** matrix_out, size_t * nu
         return false;
     }
 
-    fread(&num_rows, sizeof(size_t), 1, file);
+    fread(&num_rows, sizeof(int), 1, file);
     matrix = new double[num_rows];
     fread(matrix, sizeof(double), num_rows, file);
 
@@ -257,13 +257,13 @@ int main() {
     if(rank == 0) {
         double* matrix;
         double* rhs;
-        size_t size;
-        size_t tmp;
+        int size;
+        int tmp;
         auto start_serial = std::chrono::high_resolution_clock::now();
         read_matrix_from_file("matrix.bin", &matrix, &size);
         read_rhs_from_file("rhs.bin", &rhs, &tmp);
         double* sol = new double[size];
-        std::cout << "starting serial version" << std::endl;
+        std::cout << "starting serial version, size = " << size << std::endl;
         conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
         auto stop_serial = std::chrono::high_resolution_clock::now();
         execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
