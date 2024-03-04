@@ -70,6 +70,7 @@ public:
         MPI_Scatter(&matrixData[0], 1, matrixDataType, &myMatrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         sol.resize(size);
         read_and_send_matrix();
+        std::cout << "done reading the matrix" << std::endl;
         accelerator.setSize(size);
         accelerator.setPartialSize(matrixData[0].partial_size);
         accelerator.setMatrix(matrix);
@@ -185,7 +186,7 @@ private:
     void read_and_send_matrix() {
         auto it = std::max_element(partial_size.begin(), partial_size.end());
         size_t msize = *it;
-        double* matrix_ = new (std::align_val_t(mem_alignment)) double[size * size];
+        double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
         std::ifstream is;
         int buff;
