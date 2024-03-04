@@ -36,7 +36,7 @@ public:
          */
 
         read_rhs();
-        MPI_Bcast(&size, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
         max_size[0] = max_memory / (size * sizeof(double));
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
@@ -137,7 +137,9 @@ private:
     void read_rhs() {
         std::ifstream is;
         is.open(rhs_file_path, std::ios::binary);
-        is.read((char*)&size,sizeof(int));
+        int buff;
+        is.read((char*)&buff,sizeof(int));
+        size = buff;
         rhs.resize(size);
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
@@ -206,7 +208,7 @@ private:
 
     std::string matrix_file_path;
     std::string rhs_file_path;
-    int size;
+    size_t size;
     int world_size;
     std::vector<int> offset;
     std::vector<int> partial_size;
