@@ -11,6 +11,8 @@
 #include <fstream>
 #define MAX_PLATFORM 10
 #define MAX_DEVICE 10
+#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
+#define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
 
 
 struct MatrixData {
@@ -18,7 +20,8 @@ struct MatrixData {
     size_t partial_size;
 };
 
-double dot(const std::vector<double>& x, const std::vector<double>& y, size_t size)
+template<typename Vector1, typename Vector2>
+double dot(const Vector1& x, const Vector2& y, size_t size)
 {
     double result = 0.0;
     for(size_t i = 0; i < size; i++)
@@ -29,8 +32,8 @@ double dot(const std::vector<double>& x, const std::vector<double>& y, size_t si
 }
 
 
-
-void axpby(double alpha, const std::vector<double>& x, double beta, std::vector<double>& y, size_t size)
+template<typename Vector1, typename Vector2>
+void axpby(double alpha, const Vector1& x, double beta, Vector2& y, size_t size)
 {
     // y = alpha * x + beta * y
 

@@ -5,8 +5,7 @@
 #ifndef MATRIX_VECTOR_MULTIPLICATION_FPGAACCELERATORNODE_H
 #define MATRIX_VECTOR_MULTIPLICATION_FPGAACCELERATORNODE_H
 
-#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
-#define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
+
 #include "utils.h"
 #include <mpi.h>
 class FpgaAcceleratorNode {
