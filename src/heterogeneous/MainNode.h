@@ -82,6 +82,7 @@ public:
         double bb;
         std::vector<double> r(size);
 
+        std::cout << "size = " << size << " partial_size = " << myMatrixData.partial_size << std::endl;
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[myMatrixData.partial_size];
 
