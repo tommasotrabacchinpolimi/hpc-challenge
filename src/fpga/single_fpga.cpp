@@ -241,15 +241,15 @@ int main() {
     generate_matrix(size, &matrix);
 
     auto start_fpga = std::chrono::high_resolution_clock::now();
-    conjugate_gradient(matrix, rhs, sol, size, 1e-12, 500, context, command_queues[0], kernel);
+    conjugate_gradient(matrix, rhs, sol, size, 1e-12, 3000, context, command_queues[0], kernel);
     auto stop_fpga = std::chrono::high_resolution_clock::now();
 
     auto start = std::chrono::high_resolution_clock::now();
-    conjugate_gradient(matrix, rhs, sol, size, 1e-12, 500, context, command_queues[0], kernel);
+    conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
     auto stop = std::chrono::high_resolution_clock::now();
 
     long execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
-    long execution_time_cpu = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
+    long execution_time_cpu = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
     std::cout << "fpga: " << execution_time_fpga << std::endl;
     std::cout << "cpu: " << execution_time_cpu << std::endl;
 
