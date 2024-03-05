@@ -13,9 +13,37 @@
 #include <chrono>
 
 #define MAX_PLATFORM 10
-#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
+#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVP_improved_v1.aocx"
 #define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
 #define MEM_ALIGNMENT 64
+
+
+bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out)
+{
+    double * matrix;
+    size_t num_rows;
+    size_t num_cols;
+
+    FILE * file = fopen(filename, "rb");
+    if(file == nullptr)
+    {
+        fprintf(stderr, "Cannot open output file\n");
+        return false;
+    }
+
+    fread(&num_rows, sizeof(size_t), 1, file);
+    fread(&num_cols, sizeof(size_t), 1, file);
+    matrix = new double[num_rows * num_cols];
+    fread(matrix, sizeof(double), num_rows * num_cols, file);
+
+    *matrix_out = matrix;
+    *num_rows_out = num_rows;
+    *num_cols_out = num_cols;
+
+    fclose(file);
+
+    return true;
+}
 
 double dot(const double * x, const double * y, size_t size)
 {
@@ -510,9 +538,10 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 
 
-int main() {
-    size_t size = 3000;
-    int max_iters = 3000;
+int main(int argc, char** argv) {
+    size_t size;
+    size_t tmp;
+    int max_iters;
     double tol = 1e-12;
     cl_int err = 0;
     int number_device_required = 2;
@@ -528,12 +557,14 @@ int main() {
     for(int i = 0; i < number_device_required; i++) {
         kernels[i] = create_kernel(program, MATRIX_VECTOR_KERNEL_NAME, &err);
     }
-    auto start = std::chrono::high_resolution_clock::now();
     double* matrix;
     double* rhs;
     double* sol = new double[size];
-    generate_matrix(size, &matrix);
-    generate_rhs(size,1,  &rhs);
+
+    read_matrix_from_file(argv[1], &matrix, &size, &size);
+    max_iters = size;
+    read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
+    auto start = std::chrono::high_resolution_clock::now();
     conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
     auto stop = std::chrono::high_resolution_clock::now();
     long exe_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
