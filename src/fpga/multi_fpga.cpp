@@ -13,7 +13,7 @@
 #include <chrono>
 
 #define MAX_PLATFORM 10
-#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVP_improved_v1.aocx"
+#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
 #define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
 #define MEM_ALIGNMENT 64
 
