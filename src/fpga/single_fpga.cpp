@@ -5,6 +5,7 @@
 
 
 #include "utils.h"
+#define MEM_ALIGNMENT 64
 
 
 cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* context, cl_device_id** mydev) {
@@ -49,7 +50,7 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
 
 
 void generate_matrix(size_t n, double** matrix_out) {
-    auto* matrix = new double[n * n];
+    auto* matrix = new (std::align_val_t(MEM_ALIGNMENT)) double[n * n];
     for(size_t i = 0; i < n * n; i++) {
         matrix[i] = 0.0;
     }
@@ -64,7 +65,7 @@ void generate_matrix(size_t n, double** matrix_out) {
 }
 
 void generate_rhs(size_t n, double value, double** rhs_out) {
-    auto* rhs = new double[n];
+    auto* rhs = new (std::align_val_t(MEM_ALIGNMENT)) double[n];
     for(size_t i = 0; i < n; i++) {
         rhs[i] = value;
     }
@@ -83,7 +84,7 @@ void conjugate_gradient(const double* matrix, const double* rhs, double* x, int 
     cl_mem r;
     cl_mem iter_number;
     cl_mem achieved_error;
-    cl_int err;
+    cl_int err = 0;
 
 
 
@@ -167,7 +168,7 @@ int main() {
     size_t size = 1000;
     double* rhs;
     double* matrix;
-    double* sol = new double[size];
+    double* sol = new (std::align_val_t(MEM_ALIGNMENT)) double[size];
 
     for(int i = 0; i < size; i++) {
         sol[i] = 0.0;
