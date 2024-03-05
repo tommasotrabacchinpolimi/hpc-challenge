@@ -109,7 +109,7 @@ public:
         for(iters = 1; iters <= max_iters; iters++) {
             //std::cout << "iteration " << iters << std::endl;
             MPI_Request request1, request2;
-            MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request1);
+            MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                         (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request2);
 
