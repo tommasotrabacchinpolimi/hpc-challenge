@@ -109,6 +109,7 @@ void conjugate_gradient(const double* matrix, const double* rhs, double* x, int 
     writeToBufferNoBlock(queue, device_matrix, 0, size * size, matrix, 0);
     writeToBufferNoBlock(queue, device_rhs, 0, size, rhs, 0);
     writeToBufferNoBlock(queue, sol, 0, size, x, 0);
+    writeToBufferNoBlock(queue, r, 0, size, rhs, 0);
 
     double squared_tol = tol * tol;
     double bb = dot(rhs, rhs, size);
