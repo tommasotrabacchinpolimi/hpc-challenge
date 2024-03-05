@@ -108,13 +108,13 @@ public:
         int iters;
         for(iters = 1; iters <= max_iters; iters++) {
             //std::cout << "iteration " << iters << std::endl;
-            MPI_Request request1, request2;
+            //MPI_Request request1, request2;
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-            MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
-                        (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request2);
+            MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
+                        (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
             accelerator.compute(p, Ap);
-            MPI_Wait(&request2, MPI_STATUS_IGNORE);
+            //MPI_Wait(&request2, MPI_STATUS_IGNORE);
             alpha = rr / dot(p, Ap, size);
             axpby(alpha, p, 1.0, sol, size);
             axpby(-alpha, Ap, 1.0, r, size);

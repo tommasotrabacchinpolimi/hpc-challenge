@@ -119,7 +119,7 @@ void FPGAMatrixVectorMultiplier::setup() {
 void FPGAMatrixVectorMultiplier::compute(double *p, double *Ap) {
 
     for (int i = 0; i < num_device; i++) {
-        writeToBuffer(queues[i], device_p[i], 0, size, p, 0);
+        writeToBufferNoBlock(queues[i], device_p[i], 0, size, p, 0);
         matrix_vector_multiplication(Ap, local_offset[i], &(device_A[i]), &(device_p[i]), &(device_Ap[i]),
                                      local_partial_size[i], size, &(queues[i]), &(kernels[i]));
 
