@@ -542,7 +542,7 @@ int main(int argc, char** argv) {
     size_t size;
     size_t tmp;
     int max_iters;
-    double tol = 1e-12;
+    double tol = 1e-16;
     cl_int err = 0;
     int number_device_required = 2;
     int platform_index = 1;
