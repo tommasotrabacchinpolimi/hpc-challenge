@@ -309,7 +309,7 @@ void conjugate_gradient_aligned(const double* A, const double* b, double* x, siz
 
 void conjugate_gradient_aligned2(const double* A, const double* b, double* x, size_t size, int max_iters, double tol, int device_number, cl_command_queue* queues, cl_context context, cl_kernel* kernels) {
     double alpha, beta, rr, rr_new, bb;
-    cl_int err;
+    cl_int err = 0;
     int iters;
     size_t* offset = new size_t[device_number];
     size_t* partial_size = new size_t[device_number];
