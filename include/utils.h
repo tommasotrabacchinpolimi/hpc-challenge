@@ -11,7 +11,7 @@
 #include <fstream>
 #define MAX_PLATFORM 10
 #define MAX_DEVICE 10
-#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV.aocx"
+#define MATRIX_VECTOR_KERNEL_PATH "../src/fpga/MVV_improved_v1.aocx"
 #define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
 
 
