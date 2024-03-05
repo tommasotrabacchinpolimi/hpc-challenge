@@ -5,7 +5,7 @@
 #include "MainNode.h"
 #include "FPGAMatrixVectorMultiplier.h"
 #include "AcceleratorNode.h"
-#include "GPUMatrixVectorMultiplier.cuh"
+//#include "GPUMatrixVectorMultiplier.cuh"
 #include <chrono>
 
 
