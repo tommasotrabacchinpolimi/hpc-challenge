@@ -5,6 +5,7 @@
 #include "MainNode.h"
 #include "FPGAMatrixVectorMultiplier.h"
 #include "AcceleratorNode.h"
+#include "GPUMatrixVectorMultiplier.cuh"
 #include <chrono>
 
 
@@ -196,10 +197,11 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     }
 }
 
-bool read_matrix_from_file(const char * filename, double ** matrix_out, int * num_rows_out)
+bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out)
 {
     double * matrix;
-    int num_rows;
+    size_t num_rows;
+    size_t num_cols;
 
     FILE * file = fopen(filename, "rb");
     if(file == nullptr)
@@ -208,35 +210,14 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, int * nu
         return false;
     }
 
-    fread(&num_rows, sizeof(int), 1, file);
-    matrix = new double[num_rows * num_rows];
-    fread(matrix, sizeof(double), num_rows * num_rows, file);
+    fread(&num_rows, sizeof(size_t), 1, file);
+    fread(&num_cols, sizeof(size_t), 1, file);
+    matrix = new double[num_rows * num_cols];
+    fread(matrix, sizeof(double), num_rows * num_cols, file);
 
     *matrix_out = matrix;
     *num_rows_out = num_rows;
-
-    fclose(file);
-
-    return true;
-}
-bool read_rhs_from_file(const char * filename, double ** matrix_out, int * num_rows_out)
-{
-    double * matrix;
-    int num_rows;
-
-    FILE * file = fopen(filename, "rb");
-    if(file == nullptr)
-    {
-        fprintf(stderr, "Cannot open output file\n");
-        return false;
-    }
-
-    fread(&num_rows, sizeof(int), 1, file);
-    matrix = new double[num_rows];
-    fread(matrix, sizeof(double), num_rows, file);
-
-    *matrix_out = matrix;
-    *num_rows_out = num_rows;
+    *num_cols_out = num_cols;
 
     fclose(file);
 
@@ -245,7 +226,7 @@ bool read_rhs_from_file(const char * filename, double ** matrix_out, int * num_r
 
 
 
-int main() {
+int main(int argc, char** argv) {
     MPI_Init(nullptr, nullptr);
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -257,20 +238,20 @@ int main() {
     if(rank == 0) {
         double* matrix;
         double* rhs;
-        int size;
-        int tmp;
-        auto start_serial = std::chrono::high_resolution_clock::now();
-        read_matrix_from_file("matrix.bin", &matrix, &size);
-        read_rhs_from_file("rhs.bin", &rhs, &tmp);
-        double* sol = new double[size];
+        size_t size;
+        size_t tmp;
         std::cout << "starting serial version, size = " << size << std::endl;
-        conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
+        auto start_serial = std::chrono::high_resolution_clock::now();
+        read_matrix_from_file(argv[1], &matrix, &size, &size);
+        read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
+        double* sol = new double[size];
+        conjugate_gradients(matrix, rhs, sol, size, size, 1e-16);
         auto stop_serial = std::chrono::high_resolution_clock::now();
         execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
-        auto start_fpga = std::chrono::high_resolution_clock::now();
         std::cout << "starting fpga version" << std::endl;
-        MainNode<FPGAMatrixVectorMultiplier> mainNode("matrix.bin", "rhs.bin", 3000, 1e-12);
+        MainNode<FPGAMatrixVectorMultiplier> mainNode("matrix.bin", "rhs.bin", size, 1e-16);
         mainNode.init();
+        auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
         mainNode.compute_conjugate_gradient();
         auto stop_fpga = std::chrono::high_resolution_clock::now();
