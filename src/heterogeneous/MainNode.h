@@ -146,9 +146,10 @@ private:
 
     void read_rhs() {
         std::ifstream is;
+        size_t tmp;
         is.open(rhs_file_path, std::ios::binary);
         is.read((char*)&size,sizeof(size_t));
-        is.read((char*)&size,sizeof(size_t));
+        is.read((char*)&tmp,sizeof(size_t));
         rhs.resize(size);
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
