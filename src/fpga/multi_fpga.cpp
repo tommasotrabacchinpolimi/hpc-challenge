@@ -564,6 +564,7 @@ int main(int argc, char** argv) {
     read_matrix_from_file(argv[1], &matrix, &size, &size);
     max_iters = size;
     read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
+    std::cout << "size = " << size << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
     auto stop = std::chrono::high_resolution_clock::now();
