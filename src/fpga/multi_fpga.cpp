@@ -554,6 +554,8 @@ int main(int argc, char** argv) {
     cl_kernel* kernels = new cl_kernel[number_device_required];
     init_cl(platform_index, number_device_required, &queues, &context, &devices);
     load_program(MATRIX_VECTOR_KERNEL_PATH, &program, context, number_device_required, devices);
+    std::cout << "ok" << std::endl;
+
     for(int i = 0; i < number_device_required; i++) {
         kernels[i] = create_kernel(program, MATRIX_VECTOR_KERNEL_NAME, &err);
     }
@@ -562,6 +564,8 @@ int main(int argc, char** argv) {
     double* sol = new double[size];
 
     read_matrix_from_file(argv[1], &matrix, &size, &size);
+    std::cout << "matrix_read" << std::endl;
+
     max_iters = size;
     read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
     std::cout << "size = " << size << std::endl;
