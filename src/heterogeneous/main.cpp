@@ -240,7 +240,6 @@ int main(int argc, char** argv) {
         double* rhs;
         size_t size;
         size_t tmp;
-        std::cout << "starting serial version, size = " << size << std::endl;
         auto start_serial = std::chrono::high_resolution_clock::now();
         read_matrix_from_file(argv[1], &matrix, &size, &size);
         read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
