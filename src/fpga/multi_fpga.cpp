@@ -561,9 +561,10 @@ int main(int argc, char** argv) {
     }
     double* matrix;
     double* rhs;
-    double* sol = new double[size];
 
     read_matrix_from_file(argv[1], &matrix, &size, &size);
+    double* sol = new double[size];
+
     std::cout << "matrix_read" << std::endl;
 
     max_iters = size;
