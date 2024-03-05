@@ -248,7 +248,7 @@ int main(int argc, char** argv) {
         auto stop_serial = std::chrono::high_resolution_clock::now();
         execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
         std::cout << "starting fpga version" << std::endl;
-        MainNode<FPGAMatrixVectorMultiplier> mainNode("matrix.bin", "rhs.bin", size, 1e-16);
+        MainNode<FPGAMatrixVectorMultiplier> mainNode(argv[1], argv[2], size, 1e-16);
         mainNode.init();
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
