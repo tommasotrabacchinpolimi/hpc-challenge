@@ -205,7 +205,7 @@ void conjugate_gradients(const double * host_A, const double * host_b, double * 
     check_cl("set b", clSetKernelArg(cg, 1, sizeof(cl_mem), &device_b));
     check_cl("set x", clSetKernelArg(cg, 2, sizeof(cl_mem), &device_x));
     check_cl("set size", clSetKernelArg(cg, 3, sizeof(int), &size));
-    check_cl("set r", clSetKernelArg(cg, 4, sizeof(double), &device_r));
+    check_cl("set r", clSetKernelArg(cg, 4, sizeof(cl_mem), &device_r));
     check_cl("set p", clSetKernelArg(cg, 5, sizeof(cl_mem), &device_p));
     check_cl("set Ap", clSetKernelArg(cg, 6, sizeof(cl_mem), &device_Ap));
     check_cl("set niters", clSetKernelArg(cg, 7, sizeof(int), &max_iters));

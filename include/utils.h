@@ -45,6 +45,11 @@ inline void axpby(double alpha, const Vector1& x, double beta, Vector2& y, size_
 
 void check_cl(cl_int err, const std::string& msg);
 
+cl_mem allocateDeviceSingleInt(cl_int* err, cl_context context);
+
+
+cl_mem allocateDeviceSingleDouble(cl_int* err, cl_context context);
+
 
 void load_program(const std::string& path, cl_program* program, cl_context context, cl_uint num_devices, const cl_device_id* device_list);
 
@@ -58,6 +63,9 @@ cl_mem allocateDevice(cl_int* err, size_t size, cl_context context);
 cl_mem allocateDeviceReadOnly(cl_int* err, size_t size, cl_context context);
 
 void writeToBuffer(cl_command_queue queue, cl_mem buffer, size_t offset, size_t size, const double* host_buffer, size_t host_array_offset);
+
+void writeToBufferNoBlock(cl_command_queue queue, cl_mem buffer, size_t offset, size_t size, const double* host_buffer, size_t host_array_offset);
+
 
 void linkBufferToDevice(cl_command_queue queue, cl_mem buffer);
 

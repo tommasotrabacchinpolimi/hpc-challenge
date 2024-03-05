@@ -66,6 +66,18 @@ cl_mem allocateDevice(const double* host_array, cl_int* err, size_t size, int of
     return ret;
 }
 
+cl_mem allocateDeviceSingleInt(cl_int* err, cl_context context) {
+    cl_mem ret = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), NULL, NULL, err);
+    return ret;
+}
+
+
+cl_mem allocateDeviceSingleDouble(cl_int* err, cl_context context) {
+    cl_mem ret = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(double), NULL, NULL, err);
+    return ret;
+}
+
+
 cl_mem allocateDevice(cl_int* err, size_t size, cl_context context) {
     cl_mem ret = clCreateBuffer(context, CL_MEM_READ_WRITE, size * sizeof(double), NULL, NULL, err);
     check_cl(*err, "Error in creating uninitialized buffer");
@@ -81,6 +93,11 @@ cl_mem allocateDeviceReadOnly(cl_int* err, size_t size, cl_context context) {
 void writeToBuffer(cl_command_queue queue, cl_mem buffer, size_t offset, size_t size, const double* host_buffer, size_t host_array_offset) {
     check_cl(clEnqueueWriteBuffer(queue, buffer, CL_TRUE, offset * sizeof(double ), size * sizeof(double), host_buffer + host_array_offset, 0, NULL, NULL), "error in writing to buffer");
 }
+
+void writeToBufferNoBlock(cl_command_queue queue, cl_mem buffer, size_t offset, size_t size, const double* host_buffer, size_t host_array_offset) {
+    check_cl(clEnqueueWriteBuffer(queue, buffer, CL_FALSE, offset * sizeof(double ), size * sizeof(double), host_buffer + host_array_offset, 0, NULL, NULL), "error in writing to buffer");
+}
+
 
 void linkBufferToDevice(cl_command_queue queue, cl_mem buffer) {
     check_cl(clEnqueueMigrateMemObjects(queue, 1, &buffer, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL),"error in migrating buffer");
