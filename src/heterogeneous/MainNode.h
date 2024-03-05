@@ -146,9 +146,8 @@ private:
     void read_rhs() {
         std::ifstream is;
         is.open(rhs_file_path, std::ios::binary);
-        int buff;
-        is.read((char*)&buff,sizeof(int));
-        size = buff;
+        is.read((char*)&size,sizeof(size_t));
+        is.read((char*)&size,sizeof(size_t));
         rhs.resize(size);
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
@@ -213,13 +212,14 @@ private:
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
         std::ifstream is;
-        int buff;
+        size_t buff;
         is.open(matrix_file_path, std::ios::binary);
         if(!is.is_open()) {
             std::cout << "matrix file doesn't exist" << std::endl;
             exit(1);
         }
-        is.read((char*)&buff, sizeof(int));
+        is.read((char*)&buff, sizeof(size_t));
+        is.read((char*)&buff, sizeof(size_t));
         is.read((char*)matrix, size * partial_size[0] * sizeof(double));
         check_matrix(matrix, partial_size[0], 0);
 
