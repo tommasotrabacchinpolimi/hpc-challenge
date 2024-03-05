@@ -12,4 +12,4 @@ module load ifpgasdk && module load 520nmx && module load CMake && module load i
 cd build
 git pull
 make main_node
-srun main_node
+srun main_node matrix_10000.bin rhs_10000.bin
