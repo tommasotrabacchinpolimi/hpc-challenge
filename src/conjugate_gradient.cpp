@@ -259,7 +259,7 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     }
 }
 
-int main(int argc, char ** argv)
+int main1(int argc, char ** argv)
 {
     //printf("Usage: size max_iters rel_error\n");
     printf("\n");
@@ -329,7 +329,7 @@ int main(int argc, char ** argv)
 
 
 
-int main1(int argc, char ** argv)
+int main(int argc, char ** argv)
 {
     //printf("Usage: size max_iters rel_error\n");
     printf("\n");
