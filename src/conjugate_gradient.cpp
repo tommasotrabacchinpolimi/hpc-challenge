@@ -8,11 +8,13 @@
 
 
 
-void generate_matrix(size_t n, double** matrix_out) {
+void generate_matrix(size_t n, double** matrix_out, int num_threads) {
     auto* matrix = new double[n * n];
+#pragma omp parallel for num_threads(num_threads) default(none) shared(n, matrix)
     for(size_t i = 0; i < n * n; i++) {
         matrix[i] = 0.0;
     }
+
     for(size_t i = 0; i < n; i++) {
         matrix[i*n + i] = 2.0;
         if(i != n-1) {
@@ -23,8 +25,10 @@ void generate_matrix(size_t n, double** matrix_out) {
     *matrix_out = matrix;
 }
 
-void generate_rhs(size_t n, double value, double** rhs_out) {
+void generate_rhs(size_t n, double value, double** rhs_out, int num_threads) {
     auto* rhs = new double[n];
+
+#pragma omp parallel for num_threads(num_threads) default(none) shared(value, n, rhs)
     for(size_t i = 0; i < n; i++) {
         rhs[i] = value;
     }
@@ -259,8 +263,8 @@ int main(int argc, char ** argv)
 
     double* matrix;
     double* rhs;
-    generate_matrix(size, &matrix);
-    generate_rhs(size, 1.0, &rhs);
+    generate_matrix(size, &matrix, threads_number);
+    generate_rhs(size, 1.0, &rhs, threads_number);
     auto* sol = new double[size];
     long serial_execution_time = 0;
     long parallel_execution_time = 0;
