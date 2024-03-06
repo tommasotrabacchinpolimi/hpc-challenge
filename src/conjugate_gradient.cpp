@@ -24,7 +24,7 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t *
     fread(&num_cols, sizeof(size_t), 1, file);
     matrix = new double[num_rows * num_cols];
 
-#pragma omp parallel num_threads(num_threads) default(none) shared(num_cols, num_rows, matrix)
+#pragma omp parallel for num_threads(num_threads) default(none) shared(num_cols, num_rows, matrix)
     for(size_t i = 0; i < num_rows * num_cols; i++) {
         matrix[i] = 0.0;
     }
