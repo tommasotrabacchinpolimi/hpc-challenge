@@ -237,8 +237,8 @@ int main(int argc, char ** argv)
     int size = 5000;
     int max_iters = 3000;
     double rel_error = 1e-12;
-    int serial_trials = 1;
-    int parallel_trials = 0;
+    int serial_trials = 0;
+    int parallel_trials = 1;
     int blank_trials = 0;
     int threads_number = 6;
 
