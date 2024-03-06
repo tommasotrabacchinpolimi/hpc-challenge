@@ -366,6 +366,7 @@ int main1(int argc, char ** argv)
     //generate_matrix(size, &matrix, threads_number);
     read_matrix_from_file(argv[7], &matrix, &size, &size, threads_number);
     read_matrix_from_file(argv[8], &rhs, &ignore, &ignore, threads_number);
+    std::cout << "completed reading, size = " << size << std::endl;
     //generate_rhs(size, 1.0, &rhs, threads_number);
     auto* sol = new double[size];
     long serial_execution_time = 0;
