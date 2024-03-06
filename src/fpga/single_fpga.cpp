@@ -221,7 +221,7 @@ int main() {
     if(init_cl(2, &command_queues, &context, &devices)!=0) {
         std::cout << "error" << std::endl;
     }
-    load_program("../src/fpga/CG_kernel_reduced.aocx", &program, context, 1, devices);
+    load_program("../src/fpga/CG_improved_v1.aocx", &program, context, 1, devices);
 
     cl_int err;
     cl_kernel kernel  = create_kernel(program, "conjugate_gradient_kernel", &err);
