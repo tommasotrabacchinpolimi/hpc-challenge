@@ -1,6 +1,6 @@
 
 #define UNROLL 3
-#define LATENCY 36
+#define LATENCY 64
 //#define SIZE 10000
 
 double reduce(__global const double * __restrict__ array1, __global const double * __restrict__ array2, unsigned size) {
