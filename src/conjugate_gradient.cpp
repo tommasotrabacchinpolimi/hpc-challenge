@@ -231,16 +231,16 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
 
 int main(int argc, char ** argv)
 {
-    printf("Usage: size max_iters rel_error\n");
+    //printf("Usage: size max_iters rel_error\n");
     printf("\n");
 
-    int size = 3000;
+    int size = 5000;
     int max_iters = 3000;
-    double rel_error = 1e-9;
+    double rel_error = 1e-12;
     int serial_trials = 1;
     int parallel_trials = 0;
     int blank_trials = 0;
-    int threads_number = 1;
+    int threads_number = 6;
 
 
     if(argc > 1) size = atoi(argv[1]);
@@ -282,7 +282,7 @@ int main(int argc, char ** argv)
         parallel_execution_time += tmp;
         //memset(sol, 0, sizeof(double) * size);
     }
-
+/*
     for(int i = 0; i < size; i++) {
         std::cout << i << " : " <<sol[i] << std::endl;
     }
@@ -291,6 +291,6 @@ int main(int argc, char ** argv)
     std::cout << "Parallel average execution time: " << (double)parallel_execution_time/parallel_trials << std::endl;
     std::cout << "Speedup: " << (double)((double)serial_execution_time/serial_trials)/((double)parallel_execution_time/parallel_trials) << std::endl;
     printf("Finished successfully\n");
-
+*/
     return 0;
 }
