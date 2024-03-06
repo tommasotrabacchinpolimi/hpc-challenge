@@ -284,11 +284,12 @@ int main(int argc, char ** argv)
     for(int i = 0; i < size; i++) {
         std::cout << i << " : " <<sol[i] << std::endl;
     }
+    */
 
     std::cout << "Serial average execution time: " << (double)serial_execution_time/serial_trials << std::endl;
     std::cout << "Parallel average execution time: " << (double)parallel_execution_time/parallel_trials << std::endl;
     std::cout << "Speedup: " << (double)((double)serial_execution_time/serial_trials)/((double)parallel_execution_time/parallel_trials) << std::endl;
     printf("Finished successfully\n");
-*/
+
     return 0;
 }
