@@ -7,6 +7,38 @@
 #include <bits/stdc++.h>
 
 
+bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out, int num_threads)
+{
+    double * matrix;
+    size_t num_rows;
+    size_t num_cols;
+
+    FILE * file = fopen(filename, "rb");
+    if(file == nullptr)
+    {
+        fprintf(stderr, "Cannot open output file\n");
+        return false;
+    }
+
+    fread(&num_rows, sizeof(size_t), 1, file);
+    fread(&num_cols, sizeof(size_t), 1, file);
+    matrix = new double[num_rows * num_cols];
+
+#pragma omp parallel num_threads(num_threads) default(none) shared(num_cols, num_rows, matrix)
+    for(size_t i = 0; i < num_rows * num_cols; i++) {
+        matrix[i] = 0.0;
+    }
+    fread(matrix, sizeof(double), num_rows * num_cols, file);
+
+    *matrix_out = matrix;
+    *num_rows_out = num_rows;
+    *num_cols_out = num_cols;
+
+    fclose(file);
+
+    return true;
+}
+
 
 void generate_matrix(size_t n, double** matrix_out, int num_threads) {
     auto* matrix = new double[n * n];
@@ -227,10 +259,6 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
     }
 }
 
-
-
-
-
 int main(int argc, char ** argv)
 {
     //printf("Usage: size max_iters rel_error\n");
@@ -243,6 +271,7 @@ int main(int argc, char ** argv)
     int parallel_trials = 1;
     int blank_trials = 0;
     int threads_number = 6;
+
 
 
     if(argc > 1) size = atoi(argv[1]);
@@ -265,6 +294,79 @@ int main(int argc, char ** argv)
     double* rhs;
     generate_matrix(size, &matrix, threads_number);
     generate_rhs(size, 1.0, &rhs, threads_number);
+    auto* sol = new double[size];
+    long serial_execution_time = 0;
+    long parallel_execution_time = 0;
+
+
+
+    for(int i = 0; i < serial_trials; i++) {
+        long tmp;
+        conjugate_gradients(matrix, rhs, sol, size, max_iters, rel_error, &tmp);
+        serial_execution_time += tmp;
+        memset(sol, 0, sizeof(double) * size);
+    }
+
+    for(int i = 0; i < parallel_trials; i++) {
+        long tmp;
+        conjugate_gradients_parallel(matrix, rhs, sol, size, max_iters, rel_error, threads_number, &tmp);
+        parallel_execution_time += tmp;
+        //memset(sol, 0, sizeof(double) * size);
+    }
+/*
+    for(int i = 0; i < size; i++) {
+        std::cout << i << " : " <<sol[i] << std::endl;
+    }
+    */
+
+    std::cout << "Serial average execution time: " << (double)serial_execution_time/serial_trials << std::endl;
+    std::cout << "Parallel average execution time: " << (double)parallel_execution_time/parallel_trials << std::endl;
+    std::cout << "Speedup: " << (double)((double)serial_execution_time/serial_trials)/((double)parallel_execution_time/parallel_trials) << std::endl;
+    printf("Finished successfully\n");
+
+    return 0;
+}
+
+
+
+int main1(int argc, char ** argv)
+{
+    //printf("Usage: size max_iters rel_error\n");
+    printf("\n");
+
+    size_t size = 5000;
+    int max_iters = 3000;
+    double rel_error = 1e-12;
+    int serial_trials = 0;
+    int parallel_trials = 1;
+    int blank_trials = 0;
+    int threads_number = 6;
+
+
+    if(argc > 1) size = atoi(argv[1]);
+    if(argc > 2) max_iters = atoi(argv[2]);
+    if(argc > 3) rel_error = atof(argv[3]);
+    if(argc > 4) serial_trials = atoi(argv[4]);
+    if(argc > 5) parallel_trials = atoi(argv[5]);
+    if(argc > 6) threads_number = atoi(argv[6]);
+
+
+    printf("Command line arguments:\n");
+    printf("  matrix_size: %d\n", size);
+    printf("  max_iters:         %d\n", max_iters);
+    printf("  rel_error:         %e\n", rel_error);
+    printf("  serial trials number:         %d\n", serial_trials);
+    printf("  parallel trials number:         %d\n", parallel_trials);
+    printf("  threads number:         %d\n", threads_number);
+    printf("\n");
+
+    double* matrix;
+    double* rhs;
+    size_t ignore;
+    //generate_matrix(size, &matrix, threads_number);
+    read_matrix_from_file(argv[7], &matrix, &size, &size, threads_number);
+    read_matrix_from_file(argv[8], &rhs, &ignore, &ignore, threads_number);
+    //generate_rhs(size, 1.0, &rhs, threads_number);
     auto* sol = new double[size];
     long serial_execution_time = 0;
     long parallel_execution_time = 0;
