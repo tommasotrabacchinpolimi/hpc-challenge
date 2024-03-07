@@ -30,11 +30,19 @@ public:
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
+#pragma omp parallel for default(none) shared(p) num_threads(100)
+        for(int i = 0; i < size;i++) {
+            p[i] = 0;
+        }
+#pragma omp parallel for default(none) shared(Ap) num_threads(100)
+        for(int i = 0; i < matrixData.partial_size;i++) {
+            Ap[i] = 0;
+        }
         int cont = 0;
 
-#pragma omp parallel default(none) shared(p, Ap, matrixData, cont) num_threads(1)
+#pragma omp parallel default(none) shared(p, Ap, matrixData, cont) num_threads(100)
         {
-            while (cont < 10000) {
+            while (cont < size) {
 
 #pragma omp single
                 {

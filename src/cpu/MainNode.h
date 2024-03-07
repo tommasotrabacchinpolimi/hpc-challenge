@@ -86,15 +86,17 @@ public:
         //std::cout << "check1" << std::endl;
 
 
-        r = rhs;
+#pragma omp parallel for default(none) shared(p, Ap, r) num_threads(100)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
+            Ap[i] = rhs[i];
+            sol[i] = 0;
+            r[i] = rhs[i];
         }
+
         bb = dot(rhs,rhs,size);
         rr = bb;
-        for(auto& s : sol) {
-            s = 0.0;
-        }
+
         int iters, total_iterations;
         double dot_result = 0;
 #pragma omp parallel default(none) shared(max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
