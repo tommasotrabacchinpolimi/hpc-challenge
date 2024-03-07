@@ -31,7 +31,7 @@ public:
         accelerator.setSize(size);
         accelerator.setPartialSize(matrixData.partial_size);
         accelerator.setMatrix(matrix);
-        std::cout << "check4" << std::endl;
+        std::cout << "check4, partial_size = " << matrixData.partial_size << " size =  "<<size << std::endl;
 
         accelerator.setup();
     }
