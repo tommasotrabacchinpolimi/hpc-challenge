@@ -17,6 +17,23 @@
 #define MATRIX_VECTOR_KERNEL_NAME "matrix_vector_kernel"
 #define MEM_ALIGNMENT 64
 
+bool write_matrix_to_file(const char * filename, const double * matrix, size_t num_rows, size_t num_cols)
+{
+    FILE * file = fopen(filename, "wb");
+    if(file == nullptr)
+    {
+        fprintf(stderr, "Cannot open output file\n");
+        return false;
+    }
+
+    fwrite(&num_rows, sizeof(size_t), 1, file);
+    fwrite(&num_cols, sizeof(size_t), 1, file);
+    fwrite(matrix, sizeof(double), num_rows * num_cols, file);
+
+    fclose(file);
+
+    return true;
+}
 
 bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out)
 {
@@ -541,8 +558,8 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 int main(int argc, char** argv) {
     size_t size;
     size_t tmp;
-    int max_iters = atoi(argv[3]);
-    double tol = atof(argv[4]);
+    int max_iters = atoi(argv[4]);
+    double tol = atof(argv[5]);
     cl_int err = 0;
     int number_device_required = 2;
     int platform_index = 1;
@@ -570,6 +587,8 @@ int main(int argc, char** argv) {
     conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
     auto stop = std::chrono::high_resolution_clock::now();
     long exe_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-    std::cout << exe_time << std::endl;
+    std::cout << "execution tim = " << exe_time << std::endl;
+    write_matrix_to_file(argv[3], sol, size, 1);
+
 
 }

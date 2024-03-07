@@ -19,7 +19,7 @@ template<typename Accelerator>
 class MainNode {
 public:
 
-    MainNode(std::string  matrix_file_path, std::string  rhs_file_path, int max_iters, double tol) : matrix_file_path(std::move(matrix_file_path)), rhs_file_path(std::move(rhs_file_path)), max_iters(max_iters), tol(tol) {}
+    MainNode(std::string&  matrix_file_path, std::string&  rhs_file_path, std::string& output_file_path, int max_iters, double tol) : matrix_file_path(std::move(matrix_file_path)), rhs_file_path(std::move(rhs_file_path)), output_file_path(output_file_path), max_iters(max_iters), tol(tol) {}
 
     void init() {
 
@@ -29,11 +29,7 @@ public:
 
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         max_size.resize(world_size);
-        //std::ifstream is;
-        /*is.open(matrix_file_path, std::ios::binary);
-        is.read((char*)&size,sizeof(size_t));
-        is.close();
-         */
+
 
         read_rhs();
         std::cout << "rhs read, size = "  << size << std::endl;
@@ -107,14 +103,12 @@ public:
         }
         int iters;
         for(iters = 1; iters <= max_iters; iters++) {
-            //std::cout << "iteration " << iters << std::endl;
-            //MPI_Request request1, request2;
+
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                         (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
             accelerator.compute(p, Ap);
-            //MPI_Wait(&request2, MPI_STATUS_IGNORE);
             alpha = rr / dot(p, Ap, size);
             axpby(alpha, p, 1.0, sol, size);
             axpby(-alpha, Ap, 1.0, r, size);
@@ -133,6 +127,8 @@ public:
         {
             printf("Did not converge in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
         }
+
+        write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
 
         delete[] Ap;
         delete[] p;
@@ -157,39 +153,7 @@ private:
         is.close();
     }
 
-    /*
-    void read_rhs() {
-        rhs.resize(size);
-        for(auto& r : rhs) {
-            r = 1.0;
-        }
-    }
-     */
 
-
-/*
-    void read_and_send_matrix() {
-        std::vector<double> matrix_(size * size);
-        for(size_t i = 0; i < size * size; i++) {
-            matrix_[i] = 0.0;
-        }
-        for(size_t i = 0; i < size; i++) {
-            matrix_[i * size + i] = 2.0;
-            if(i != size-1) {
-                matrix_[(i + 1) * size + i] = -1;
-                matrix_[i * size + (i + 1)] = -1;
-            }
-        }
-
-        matrix = new (std::align_val_t(mem_alignment)) double[size * myMatrixData.partial_size];
-        for(size_t i = 1; i < world_size; i++) {
-            MPI_Send(&matrix_[0] + offset[i] * size, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
-        }
-        for(int i = 0; i < size * myMatrixData.partial_size; i++) {
-            matrix[i] = matrix_[i];
-        }
-    }
-    */
 
     void check_matrix(double* matrix, int nrows, int offset) {
         std::vector<double> matrix_(size * size);
@@ -233,12 +197,30 @@ private:
         }
         is.close();
         delete[] matrix_;
-        std::cout << "matrix read, size = " << size << std::endl;
 
+    }
+
+    static bool write_matrix_to_file(const char * filename, const double * matrix, size_t num_rows, size_t num_cols)
+    {
+        FILE * file = fopen(filename, "wb");
+        if(file == nullptr)
+        {
+            fprintf(stderr, "Cannot open output file\n");
+            return false;
+        }
+
+        fwrite(&num_rows, sizeof(size_t), 1, file);
+        fwrite(&num_cols, sizeof(size_t), 1, file);
+        fwrite(matrix, sizeof(double), num_rows * num_cols, file);
+
+        fclose(file);
+
+        return true;
     }
 
     std::string matrix_file_path;
     std::string rhs_file_path;
+    std::string output_file_path;
     size_t size;
     int world_size;
     std::vector<int> offset;
