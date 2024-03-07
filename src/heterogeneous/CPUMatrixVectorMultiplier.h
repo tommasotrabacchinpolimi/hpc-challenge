@@ -18,7 +18,7 @@ public:
 
     virtual void compute(double* p, double* Ap) {
 
-#pragma omp parallel for simd num_threads(10) default(none) shared(Ap, p)
+#pragma omp parallel for simd num_threads(100) default(none) shared(Ap, p)
         for (size_t i = 0; i < partial_size; i += 1) {
             Ap[i] = 0.0;
 #pragma omp simd
