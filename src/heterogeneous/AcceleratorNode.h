@@ -51,6 +51,8 @@ public:
 
         while(true) {
 
+            std::cout << "new cycle" << std::endl;
+
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             std::cout << "broadcast completed" << std::endl;
 
