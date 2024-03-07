@@ -46,8 +46,7 @@ int main(int argc, char** argv) {
         size_t tmp;
         int max_iter = atoi(argv[4]);
         double tol = atof(argv[5]);
-        read_matrix_from_file(argv[1], &matrix, &size, &size);
-        read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
+
         MainNode<CPUMatrixVectorMultiplier> mainNode(reinterpret_cast<std::string &>(argv[1]),
                                                       reinterpret_cast<std::string &>(argv[2]),
                                                       reinterpret_cast<std::string &>(argv[3]), max_iter, tol);
