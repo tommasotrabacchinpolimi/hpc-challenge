@@ -5,6 +5,25 @@
 #include <iostream>
 
 
+bool write_matrix_to_file(const char * filename, const double * matrix, size_t num_rows, size_t num_cols)
+{
+    FILE * file = fopen(filename, "wb");
+    if(file == nullptr)
+    {
+        fprintf(stderr, "Cannot open output file\n");
+        return false;
+    }
+
+    fwrite(&num_rows, sizeof(size_t), 1, file);
+    fwrite(&num_cols, sizeof(size_t), 1, file);
+    fwrite(matrix, sizeof(double), num_rows * num_cols, file);
+
+    fclose(file);
+
+    return true;
+}
+
+
 bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out, int num_threads)
 {
     double * matrix;
@@ -316,6 +335,7 @@ int main(int argc, char ** argv)
     std::cout << "Serial average execution time: " << (double)serial_execution_time/serial_trials << std::endl;
     std::cout << "Parallel average execution time: " << (double)parallel_execution_time/parallel_trials << std::endl;
     std::cout << "Speedup: " << (double)((double)serial_execution_time/serial_trials)/((double)parallel_execution_time/parallel_trials) << std::endl;
+    write_matrix_to_file(argv[8], sol, size, 1);
     printf("Finished successfully\n");
 
     return 0;

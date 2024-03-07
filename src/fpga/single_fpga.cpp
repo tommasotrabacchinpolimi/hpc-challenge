@@ -9,6 +9,26 @@
 #include <cmath>
 #define MEM_ALIGNMENT 64
 
+
+bool write_matrix_to_file(const char * filename, const double * matrix, size_t num_rows, size_t num_cols)
+{
+    FILE * file = fopen(filename, "wb");
+    if(file == nullptr)
+    {
+        fprintf(stderr, "Cannot open output file\n");
+        return false;
+    }
+
+    fwrite(&num_rows, sizeof(size_t), 1, file);
+    fwrite(&num_cols, sizeof(size_t), 1, file);
+    fwrite(matrix, sizeof(double), num_rows * num_cols, file);
+
+    fclose(file);
+
+    return true;
+}
+
+
 bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out)
 {
     double * matrix;
@@ -240,8 +260,8 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
 
 
 int main(int argc, char** argv) {
-    int max_iters = atoi(argv[3]);
-    double tol = atof(argv[4]);
+    int max_iters = atoi(argv[4]);
+    double tol = atof(argv[5]);
     cl_context context;
     cl_command_queue* command_queues;
     cl_program program;
@@ -280,6 +300,8 @@ int main(int argc, char** argv) {
     long execution_time_cpu = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
     std::cout << "fpga: " << execution_time_fpga << std::endl;
     std::cout << "cpu: " << execution_time_cpu << std::endl;
+
+    write_matrix_to_file(argv[3], sol, size, 1);
 
 
 
