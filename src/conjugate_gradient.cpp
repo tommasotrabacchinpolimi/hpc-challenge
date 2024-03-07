@@ -134,6 +134,7 @@ void conjugate_gradients_parallel(const double *  A, const double * b, double * 
     auto * Ap = new double[size];
     int num_iters;
 
+#pragma omp parallel for default(none) shared(x,r,p,b,size) num_threads(threads_number)
     for(size_t i = 0; i < size; i++) {
         x[i] = 0.0;
         r[i] = b[i];
