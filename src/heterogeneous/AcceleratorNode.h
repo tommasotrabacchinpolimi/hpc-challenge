@@ -39,10 +39,16 @@ public:
     }
 
     void compute() {
+        int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if(rank == 1)
         std::cout << "computing" << std::endl;
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
+        if(rank == 1)
+        std::cout << "starting cycle" << std::endl;
+
         while(true) {
 
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
