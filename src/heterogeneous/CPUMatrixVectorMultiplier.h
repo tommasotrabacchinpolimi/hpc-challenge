@@ -18,7 +18,6 @@ public:
 
     virtual void compute(double* p, double* Ap) {
 
-        return;
         for (size_t i = 0; i < partial_size; i += 1) {
             Ap[i] = 0.0;
             for (size_t j = 0; j < size; j++) {
@@ -34,7 +33,7 @@ public:
 
     //size_ is the number of rows that are offloaded to the accelerator
     virtual void setPartialSize(size_t size_) {
-        partial_size = size;
+        partial_size = size_;
     };
 
 
