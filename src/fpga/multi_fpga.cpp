@@ -541,8 +541,8 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 int main(int argc, char** argv) {
     size_t size;
     size_t tmp;
-    int max_iters;
-    double tol = 1e-16;
+    int max_iters = atoi(argv[3]);
+    double tol = atof(argv[4]);
     cl_int err = 0;
     int number_device_required = 2;
     int platform_index = 1;
@@ -554,7 +554,6 @@ int main(int argc, char** argv) {
     cl_kernel* kernels = new cl_kernel[number_device_required];
     init_cl(platform_index, number_device_required, &queues, &context, &devices);
     load_program(MATRIX_VECTOR_KERNEL_PATH, &program, context, number_device_required, devices);
-    std::cout << "ok" << std::endl;
 
     for(int i = 0; i < number_device_required; i++) {
         kernels[i] = create_kernel(program, MATRIX_VECTOR_KERNEL_NAME, &err);
@@ -565,11 +564,8 @@ int main(int argc, char** argv) {
     read_matrix_from_file(argv[1], &matrix, &size, &size);
     double* sol = new double[size];
 
-    std::cout << "matrix_read" << std::endl;
 
-    max_iters = size;
     read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
-    std::cout << "size = " << size << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
     conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
     auto stop = std::chrono::high_resolution_clock::now();

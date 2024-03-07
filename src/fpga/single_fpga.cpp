@@ -9,6 +9,32 @@
 #include <cmath>
 #define MEM_ALIGNMENT 64
 
+bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t * num_rows_out, size_t * num_cols_out)
+{
+    double * matrix;
+    size_t num_rows;
+    size_t num_cols;
+
+    FILE * file = fopen(filename, "rb");
+    if(file == nullptr)
+    {
+        fprintf(stderr, "Cannot open output file\n");
+        return false;
+    }
+
+    fread(&num_rows, sizeof(size_t), 1, file);
+    fread(&num_cols, sizeof(size_t), 1, file);
+    matrix = new double[num_rows * num_cols];
+    fread(matrix, sizeof(double), num_rows * num_cols, file);
+
+    *matrix_out = matrix;
+    *num_rows_out = num_rows;
+    *num_cols_out = num_cols;
+
+    fclose(file);
+
+    return true;
+}
 
 void gemv(double alpha, const double * A, const double * x, double beta, double * y, size_t num_rows, size_t num_cols)
 {
@@ -213,7 +239,9 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
 
 
 
-int main() {
+int main(int argc, char** argv) {
+    int max_iters = atoi(argv[3]);
+    double tol = atof(argv[4]);
     cl_context context;
     cl_command_queue* command_queues;
     cl_program program;
@@ -225,27 +253,27 @@ int main() {
 
     cl_int err;
     cl_kernel kernel  = create_kernel(program, "conjugate_gradient_kernel", &err);
-    if(err == CL_SUCCESS) {
-        std::cout << "Success" << std::endl;
-    }
-    size_t size = 3000;
+    size_t size;
     double* rhs;
     double* matrix;
+    read_matrix_from_file(argv[1], &matrix, &size, &size);
     double* sol = new (std::align_val_t(MEM_ALIGNMENT)) double[size];
 
     for(int i = 0; i < size; i++) {
         sol[i] = 0.0;
     }
+    size_t tmp;
+    read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
 
-    generate_rhs(size, 1.0, &rhs);
-    generate_matrix(size, &matrix);
+
+
 
     auto start_fpga = std::chrono::high_resolution_clock::now();
-    conjugate_gradient(matrix, rhs, sol, size, 1e-12, 3000, context, command_queues[0], kernel);
+    conjugate_gradient(matrix, rhs, sol, size, tol, max_iters, context, command_queues[0], kernel);
     auto stop_fpga = std::chrono::high_resolution_clock::now();
 
     auto start = std::chrono::high_resolution_clock::now();
-    conjugate_gradients(matrix, rhs, sol, size, 3000, 1e-12);
+    conjugate_gradients(matrix, rhs, sol, size, max_iters, tol);
     auto stop = std::chrono::high_resolution_clock::now();
 
     long execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
