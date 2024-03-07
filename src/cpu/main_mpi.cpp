@@ -1,6 +1,5 @@
 #include "../src/cpu/MainNode.h"
 #include "../src/cpu/AcceleratorNode.h"
-#include "CPUMatrixVectorMultiplier.h"
 #include <chrono>
 
 
@@ -53,7 +52,7 @@ int main(int argc, char** argv) {
         std::string rhs_path = argv[2];
         std::string output_path = argv[3];
 
-        MainNode<CPUMatrixVectorMultiplier> mainNode(matrix_path,
+        MainNode mainNode(matrix_path,
                                                       rhs_path,
                                                       output_path, max_iter, tol);
 
@@ -68,7 +67,7 @@ int main(int argc, char** argv) {
         std::cout << "execution time = " << execution_time_fpga << std::endl;
         MPI_Abort(MPI_COMM_WORLD, 0);
     } else {
-        AcceleratorNode<CPUMatrixVectorMultiplier> acceleratorNode;
+        AcceleratorNode acceleratorNode;
         acceleratorNode.init();
         acceleratorNode.handshake();
         acceleratorNode.compute();
