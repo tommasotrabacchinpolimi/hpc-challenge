@@ -34,9 +34,13 @@ public:
         std::cout << "check4, partial_size = " << matrixData.partial_size << " size =  "<<size << std::endl;
 
         accelerator.setup();
+        std::cout << "setup completed" << std::endl;
+
     }
 
     void compute() {
+        std::cout << "computing" << std::endl;
+
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
         while(true) {
