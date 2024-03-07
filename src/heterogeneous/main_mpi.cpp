@@ -54,7 +54,11 @@ int main(int argc, char** argv) {
         MainNode<CPUMatrixVectorMultiplier> mainNode(reinterpret_cast<std::string &>(argv[1]),
                                                       reinterpret_cast<std::string &>(argv[2]),
                                                       reinterpret_cast<std::string &>(argv[3]), max_iter, tol);
+        std::cout << "start3" << std::endl;
+
         mainNode.init();
+        std::cout << "start4" << std::endl;
+
         auto start_fpga = std::chrono::high_resolution_clock::now();
         std::cout << "handshake" << std::endl;
         mainNode.handshake();
