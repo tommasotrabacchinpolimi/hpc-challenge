@@ -262,7 +262,6 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
 
 int main(int argc, char ** argv)
 {
-    //printf("Usage: size max_iters rel_error\n");
     printf("\n");
 
     size_t size = 5000;
@@ -270,22 +269,21 @@ int main(int argc, char ** argv)
     double rel_error = 1e-12;
     int serial_trials = 0;
     int parallel_trials = 1;
-    int blank_trials = 0;
     int threads_number = 6;
 
 
     if(argc > 1) size = atoi(argv[1]);
-    if(argc > 2) max_iters = atoi(argv[2]);
-    if(argc > 3) rel_error = atof(argv[3]);
-    if(argc > 4) serial_trials = atoi(argv[4]);
-    if(argc > 5) parallel_trials = atoi(argv[5]);
-    if(argc > 6) threads_number = atoi(argv[6]);
+    if(argc > 2) max_iters = atoi(argv[1]);
+    if(argc > 3) rel_error = atof(argv[2]);
+    if(argc > 4) serial_trials = atoi(argv[3]);
+    if(argc > 5) parallel_trials = atoi(argv[4]);
+    if(argc > 6) threads_number = atoi(argv[5]);
 
     double* matrix;
     double* rhs;
     size_t ignore;
-    read_matrix_from_file(argv[7], &matrix, &size, &size, threads_number);
-    read_matrix_from_file(argv[8], &rhs, &ignore, &ignore, threads_number);
+    read_matrix_from_file(argv[6], &matrix, &size, &size, threads_number);
+    read_matrix_from_file(argv[7], &rhs, &ignore, &ignore, threads_number);
 
     printf("Command line arguments:\n");
     printf("  matrix_size: %d\n", size);
