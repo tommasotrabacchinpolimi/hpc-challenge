@@ -43,7 +43,6 @@ public:
 
             MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             accelerator.compute(p, Ap);
-            std::cout << matrixData.partial_size << std::endl;
             MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
         }
