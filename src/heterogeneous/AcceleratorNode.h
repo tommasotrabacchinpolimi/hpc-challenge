@@ -46,9 +46,7 @@ public:
                 }
 
                 accelerator.compute(p, Ap);
-                {
                     MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-                }
 
 
             }
