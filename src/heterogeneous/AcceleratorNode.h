@@ -26,10 +26,13 @@ public:
         std::cout << "check2" << std::endl;
 
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        std::cout << "check3" << std::endl;
 
         accelerator.setSize(size);
         accelerator.setPartialSize(matrixData.partial_size);
         accelerator.setMatrix(matrix);
+        std::cout << "check4" << std::endl;
+
         accelerator.setup();
     }
 
