@@ -50,7 +50,7 @@ public:
                     MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
                 }
 
-#pragma omp for simd nowait
+#pragma omp for simd
                 for (size_t i = 0; i < matrixData.partial_size; i += 1) {
                     Ap[i] = 0.0;
 #pragma omp simd

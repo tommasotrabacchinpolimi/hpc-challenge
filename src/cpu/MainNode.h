@@ -89,7 +89,7 @@ public:
 #pragma omp parallel for default(none) shared(p, Ap, r) num_threads(100)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
-            Ap[i] = rhs[i];
+            Ap[i] = 0.0;
             sol[i] = 0;
             r[i] = rhs[i];
         }
