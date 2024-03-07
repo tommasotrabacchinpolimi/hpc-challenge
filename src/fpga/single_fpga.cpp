@@ -24,7 +24,7 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t *
 
     fread(&num_rows, sizeof(size_t), 1, file);
     fread(&num_cols, sizeof(size_t), 1, file);
-    matrix = new double[num_rows * num_cols];
+    matrix = new (std::align_val_t(MEM_ALIGNMENT))double[num_rows * num_cols];
     fread(matrix, sizeof(double), num_rows * num_cols, file);
 
     *matrix_out = matrix;
