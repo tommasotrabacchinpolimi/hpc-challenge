@@ -196,6 +196,10 @@ private:
         is.read((char*)&size,sizeof(size_t));
         is.read((char*)&tmp,sizeof(size_t));
         rhs.resize(size);
+#pragma omp parallel for default(none) num_threads(100)
+        for(int i = 0; i < size; i++) {
+            rhs[i] = 0;
+        }
         is.read((char*)&rhs[0], size * sizeof(double));
         is.close();
     }
@@ -227,7 +231,7 @@ private:
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
 
-#pragma omp parallel for default(none)
+#pragma omp parallel for default(none) num_threads(100)
         for(int i = 0; i < partial_size[0] * size; i++) {
             matrix[i] = 0.0;
         }
