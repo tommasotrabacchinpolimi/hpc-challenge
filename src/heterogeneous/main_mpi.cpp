@@ -40,6 +40,8 @@ int main(int argc, char** argv) {
     long execution_time_fpga;
 
     if(rank == 0) {
+        std::cout << "start" << std::endl;
+
         double* matrix;
         double* rhs;
         size_t size;
