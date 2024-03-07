@@ -60,6 +60,7 @@ public:
             std::cout << "compute completed" << std::endl;
 
             MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+            std::cout << "gather completed" << std::endl;
 
         }
     }
