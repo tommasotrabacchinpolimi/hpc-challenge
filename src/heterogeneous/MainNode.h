@@ -162,11 +162,11 @@ public:
 
         if(iters <= max_iters)
         {
-            printf("Converged in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
+            printf("Converged in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
         }
         else
         {
-            printf("Did not converge in %d iterations, relative error is %e\n", iters, std::sqrt(rr / bb));
+            printf("Did not converge in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
         }
 
         write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
