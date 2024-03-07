@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
                                                       reinterpret_cast<std::string &>(argv[3]), max_iter, tol);
         mainNode.init();
         auto start_fpga = std::chrono::high_resolution_clock::now();
+        std::cout << "handshake" << std::endl;
         mainNode.handshake();
         mainNode.compute_conjugate_gradient();
         auto stop_fpga = std::chrono::high_resolution_clock::now();
