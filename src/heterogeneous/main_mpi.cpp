@@ -50,10 +50,13 @@ int main(int argc, char** argv) {
         double tol = atof(argv[5]);
         std::cout << "start2" << std::endl;
 
+        std::string matrix_path = argv[1];
+        std::string rhs_path = argv[2];
+        std::string output_path = argv[3];
 
-        MainNode<CPUMatrixVectorMultiplier> mainNode(reinterpret_cast<std::string &>(argv[1]),
-                                                      reinterpret_cast<std::string &>(argv[2]),
-                                                      reinterpret_cast<std::string &>(argv[3]), max_iter, tol);
+        MainNode<CPUMatrixVectorMultiplier> mainNode(matrix_path,
+                                                      rhs_path,
+                                                      output_path, max_iter, tol);
         std::cout << "start3" << std::endl;
 
         mainNode.init();
