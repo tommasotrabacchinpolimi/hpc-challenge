@@ -18,10 +18,13 @@ public:
         MPI_Type_commit(&matrixDataType);
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
+        std::cout << "check1" << std::endl;
         #pragma omp parallel for default(none)
         for(int i = 0; i < size * matrixData.partial_size; i++) {
             matrix[i] = 0.0;
         }
+        std::cout << "check2" << std::endl;
+
         MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         accelerator.setSize(size);

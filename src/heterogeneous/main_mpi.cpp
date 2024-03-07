@@ -40,7 +40,6 @@ int main(int argc, char** argv) {
     long execution_time_fpga;
 
     if(rank == 0) {
-        std::cout << "start" << std::endl;
 
         double* matrix;
         double* rhs;
@@ -48,7 +47,6 @@ int main(int argc, char** argv) {
         size_t tmp;
         int max_iter = atoi(argv[4]);
         double tol = atof(argv[5]);
-        std::cout << "start2" << std::endl;
 
         std::string matrix_path = argv[1];
         std::string rhs_path = argv[2];
@@ -57,13 +55,10 @@ int main(int argc, char** argv) {
         MainNode<CPUMatrixVectorMultiplier> mainNode(matrix_path,
                                                       rhs_path,
                                                       output_path, max_iter, tol);
-        std::cout << "start3" << std::endl;
 
         mainNode.init();
-        std::cout << "start4" << std::endl;
 
         auto start_fpga = std::chrono::high_resolution_clock::now();
-        std::cout << "handshake" << std::endl;
         mainNode.handshake();
         mainNode.compute_conjugate_gradient();
         auto stop_fpga = std::chrono::high_resolution_clock::now();

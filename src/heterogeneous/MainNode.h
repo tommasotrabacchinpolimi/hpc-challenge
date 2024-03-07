@@ -31,9 +31,7 @@ public:
         max_size.resize(world_size);
 
 
-        std::cout << "reading rhs" << std::endl;
         read_rhs();
-        std::cout << "rhs read, size = "  << size << std::endl;
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
         max_size[0] = max_memory / (size * sizeof(double));
