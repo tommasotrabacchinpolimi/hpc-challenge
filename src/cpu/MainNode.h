@@ -22,7 +22,6 @@ public:
 
     void init() {
 
-        accelerator.init();
     }
     void handshake() {
 

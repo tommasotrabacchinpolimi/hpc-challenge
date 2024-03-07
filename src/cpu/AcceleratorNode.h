@@ -5,7 +5,6 @@
 class AcceleratorNode {
 public:
     void init() {
-        accelerator.init();
     }
 
     void handshake() {
