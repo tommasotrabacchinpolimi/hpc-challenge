@@ -18,7 +18,7 @@ public:
 
     virtual void compute(double* p, double* Ap) {
 
-#pragma omp for simd
+#pragma omp simd
         for (size_t i = 0; i < partial_size; i += 1) {
             Ap[i] = 0.0;
 #pragma omp simd
