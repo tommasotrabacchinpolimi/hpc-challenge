@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
     MPI_Init(nullptr, nullptr);
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    long execution_time_fpga, execution_time_serial;
+    long execution_time_fpga;
 
 
 
@@ -241,15 +241,11 @@ int main(int argc, char** argv) {
         size_t tmp;
         int max_iter = atoi(argv[4]);
         double tol = atof(argv[5]);
-        auto start_serial = std::chrono::high_resolution_clock::now();
         read_matrix_from_file(argv[1], &matrix, &size, &size);
         read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
-        double* sol = new double[size];
-        conjugate_gradients(matrix, rhs, sol, size, max_iter, tol);
-        auto stop_serial = std::chrono::high_resolution_clock::now();
-        execution_time_serial = std::chrono::duration_cast<std::chrono::microseconds>(stop_serial - start_serial).count();
-        std::cout << "starting fpga version" << std::endl;
-        MainNode<FPGAMatrixVectorMultiplier> mainNode(argv[1], argv[2], argv[3],  max_iter, tol);
+        MainNode<FPGAMatrixVectorMultiplier> mainNode(reinterpret_cast<std::string &>(argv[1]),
+                                                      reinterpret_cast<std::string &>(argv[2]),
+                                                      reinterpret_cast<std::string &>(argv[3]), max_iter, tol);
         mainNode.init();
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
@@ -258,7 +254,6 @@ int main(int argc, char** argv) {
         execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
 
         std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
-        std::cout << "serial execution time = " << execution_time_serial << std::endl;
         MPI_Abort(MPI_COMM_WORLD, 0);
 
 

@@ -292,14 +292,10 @@ int main(int argc, char** argv) {
     conjugate_gradient(matrix, rhs, sol, size, tol, max_iters, context, command_queues[0], kernel);
     auto stop_fpga = std::chrono::high_resolution_clock::now();
 
-    auto start = std::chrono::high_resolution_clock::now();
-    conjugate_gradients(matrix, rhs, sol, size, max_iters, tol);
-    auto stop = std::chrono::high_resolution_clock::now();
+
 
     long execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
-    long execution_time_cpu = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-    std::cout << "fpga: " << execution_time_fpga << std::endl;
-    std::cout << "cpu: " << execution_time_cpu << std::endl;
+    std::cout << "execution time: " << execution_time_fpga << std::endl;
 
     write_matrix_to_file(argv[3], sol, size, 1);
 
