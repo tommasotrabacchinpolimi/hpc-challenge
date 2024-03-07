@@ -107,6 +107,7 @@ public:
 #pragma omp single
                 {
                     MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    //accelerator.compute(p, Ap);
                     MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                                 (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
                     accelerator.compute(p, Ap);
