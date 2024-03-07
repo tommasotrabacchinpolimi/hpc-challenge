@@ -179,6 +179,11 @@ private:
         size_t msize = *it;
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
+
+#pragma omp parallel for default(none)
+        for(int i = 0; i < partial_size[0] * size; i++) {
+            matrix[i] = 0.0;
+        }
         std::ifstream is;
         size_t buff;
         is.open(matrix_file_path, std::ios::binary);
