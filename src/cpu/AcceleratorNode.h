@@ -31,24 +31,24 @@ public:
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
 
-#pragma omp parallel default(none) shared(p, Ap, matrixData) num_threads(100)
+//#pragma omp parallel default(none) shared(p, Ap, matrixData) num_threads(100)
         {
             while (true) {
 
-#pragma omp single
+//#pragma omp single
                 {
                     MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
                 }
 
-#pragma omp for simd nowait
+//#pragma omp for simd nowait
                 for (size_t i = 0; i < matrixData.partial_size; i += 1) {
                     Ap[i] = 0.0;
-#pragma omp simd
+//#pragma omp simd
                     for (size_t j = 0; j < size; j++) {
                         Ap[i] += matrix[i * size + j] * p[j];
                     }
                 }
-#pragma omp single
+//#pragma omp single
                 {
                     MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
                                 MPI_COMM_WORLD);
