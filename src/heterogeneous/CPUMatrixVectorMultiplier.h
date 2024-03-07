@@ -18,6 +18,7 @@ public:
 
     virtual void compute(double* p, double* Ap) {
 
+        return;
         for (size_t i = 0; i < partial_size; i += 1) {
             Ap[i] = 0.0;
             for (size_t j = 0; j < size; j++) {
