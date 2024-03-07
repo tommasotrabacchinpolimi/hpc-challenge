@@ -12,6 +12,8 @@ add_executable(multi_node src/heterogeneous/main.cpp src/heterogeneous/utils.cpp
 add_executable(mpi src/heterogeneous/main_mpi.cpp src/heterogeneous/utils.cpp)
 find_package(MPI REQUIRED)
 target_link_libraries(multi_node MPI::MPI_CXX)
+target_link_libraries(mpi MPI::MPI_CXX)
+
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
