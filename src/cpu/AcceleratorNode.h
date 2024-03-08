@@ -20,10 +20,7 @@ public:
         for(int i = 0; i < size * matrixData.partial_size; i++) {
             matrix[i] = 0.0;
         }
-        MPI_Request r;
-        MPI_Irecv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, &r);
-
-
+        MPI_Recv(matrix, size * matrixData.partial_size, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     }
 

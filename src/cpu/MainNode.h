@@ -257,13 +257,16 @@ public:
                     //std::cout << "iter  " << iters << std::endl;
                     dot_result = 0.0;
                     rr_new = 0.0;
-                    MPI_Request request_broadcast;
-                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
+
 
                     MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                                  (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_gather);
-                    //MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
-                    //MPI_Wait(&request_broadcast, MPI_STATUS_IGNORE);
+
+                }
+#pragma omp single nowait
+                {
+                    MPI_Request request_broadcast;
+                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
                 }
 
 #pragma omp for simd nowait
@@ -415,10 +418,9 @@ private:
         is.read((char*)&buff, sizeof(size_t));
         is.read((char*)matrix, size * partial_size[0] * sizeof(double));
         //check_matrix(matrix, partial_size[0], 0);
-        MPI_Request r;
         for(int i = 1; i < world_size; i++) {
             is.read((char*)matrix_, size * partial_size[i] * sizeof(double));
-            MPI_Ibsend(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &r);
+            MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
         }
         is.close();
         delete[] matrix_;
