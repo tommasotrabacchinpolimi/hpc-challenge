@@ -47,10 +47,11 @@ public:
 #pragma omp single
                 {
                     MPI_Request r;
-                    cont++;
+
                     MPI_Ibcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &r);
                     MPI_Wait(&r, MPI_STATUS_IGNORE);
                 }
+
 
 #pragma omp for simd
                 for (size_t i = 0; i < matrixData.partial_size; i += 1) {
@@ -66,6 +67,7 @@ public:
                     MPI_Igatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
                                 MPI_COMM_WORLD, &r);
                     MPI_Wait(&r, MPI_STATUS_IGNORE);
+                    cont++;
 
                 }
 

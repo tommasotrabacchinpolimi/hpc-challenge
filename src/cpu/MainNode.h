@@ -14,6 +14,7 @@
 #include "utils.h"
 #include <algorithm>
 #include <chrono>
+#include <omp.h>
 
 class MainNode {
 public:
@@ -72,7 +73,7 @@ public:
 
     }
 
-    void compute_conjugate_gradient() {
+    void compute_conjugate_gradient1() {
         double alpha;
         double beta;
         double rr;
@@ -201,6 +202,139 @@ public:
         std::cout << "communication overhead " << comm_overhead << std::endl,
 
         write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
+
+        delete[] Ap;
+        delete[] p;
+
+        //MPI_Abort(MPI_COMM_WORLD, 0);
+    }
+
+    void compute_conjugate_gradient() {
+        double alpha;
+        double beta;
+        double rr;
+        double rr_new;
+        double bb;
+        std::vector<double> r(size);
+
+        double* p = new (std::align_val_t(mem_alignment))double[size];
+        double* Ap = new (std::align_val_t(mem_alignment))double[size];
+
+        double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
+        //std::cout << "check1" << std::endl;
+
+
+#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
+        for(int i = 0; i < size; i++) {
+            p[i] = rhs[i];
+            Ap[i] = 0.0;
+            Ap_[i] = 0.0;
+            sol[i] = 0;
+            r[i] = rhs[i];
+        }
+
+        bb = dot(rhs,rhs,size);
+        rr = bb;
+
+        int iters, total_iterations;
+        double dot_result = 0;
+#pragma omp parallel default(none) shared(Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
+        {
+
+            for (iters = 1; iters <= max_iters; iters++) {
+
+#pragma omp for
+                for(int i = 0; i < myMatrixData.partial_size; i++) {
+                    Ap_[i] = Ap[i];
+                }
+
+
+#pragma omp single
+                {
+                    MPI_Request request_broadcast;
+                    MPI_Request request_gather;
+                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
+
+                    MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
+                                 (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    //MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
+                    //MPI_Wait(&request_broadcast, MPI_STATUS_IGNORE);
+                }
+
+#pragma omp for simd nowait
+                for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
+                    Ap_[i] = 0.0;
+#pragma omp simd
+                    for (size_t j = 0; j < size; j++) {
+                        Ap_[i] += matrix[i * size + j] * p[j];
+                    }
+                }
+
+#pragma omp barrier
+
+#pragma omp for
+                for(int i = 0; i < myMatrixData.partial_size; i++) {
+                    Ap[i] = Ap_[i];
+                }
+
+#pragma omp single
+                {
+                    dot_result = 0.0;
+                    rr_new = 0.0;
+                }
+
+
+#pragma omp for simd reduction(+:dot_result)
+                for (size_t i = 0; i < size; i++) {
+                    dot_result += p[i] * Ap[i];
+                }
+                alpha = rr / dot_result;
+
+
+#pragma omp for simd nowait
+                for(size_t i = 0; i < size; i++) {
+                    sol[i] = alpha * p[i] + sol[i];
+                }
+
+
+#pragma omp for simd nowait
+                for(size_t i = 0; i < size; i++) {
+                    r[i] = -alpha * Ap[i] + r[i];
+                }
+
+
+#pragma omp for simd reduction(+:rr_new)
+                for (size_t i = 0; i < size; i++) {
+                    rr_new += r[i] * r[i];
+                }
+
+
+                beta = rr_new / rr;
+                rr = rr_new;
+                if (std::sqrt(rr / bb) < tol) {
+#pragma omp single
+                    {
+                        total_iterations = iters;
+                    }
+                    break; }
+
+#pragma omp for simd
+                for(size_t i = 0; i < size; i++) {
+                    p[i] =  r[i] + beta * p[i];
+                }
+            }
+        }
+
+        if(iters <= max_iters)
+        {
+            printf("Converged in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
+        }
+        else
+        {
+            printf("Did not converge in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
+        }
+
+                write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
 
         delete[] Ap;
         delete[] p;
