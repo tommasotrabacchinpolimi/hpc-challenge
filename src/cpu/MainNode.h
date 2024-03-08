@@ -224,7 +224,7 @@ public:
         //std::cout << "check1" << std::endl;
 
 
-#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
+#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(200)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
             Ap[i] = 0.0;
@@ -365,7 +365,7 @@ private:
         is.read((char*)&size,sizeof(size_t));
         is.read((char*)&tmp,sizeof(size_t));
         rhs.resize(size);
-#pragma omp parallel for default(none) num_threads(100)
+#pragma omp parallel for default(none) num_threads(200)
         for(int i = 0; i < size; i++) {
             rhs[i] = 0;
         }
@@ -400,7 +400,7 @@ private:
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
 
-#pragma omp parallel for default(none) num_threads(100)
+#pragma omp parallel for default(none) num_threads(200)
         for(int i = 0; i < partial_size[0] * size; i++) {
             matrix[i] = 0.0;
         }
