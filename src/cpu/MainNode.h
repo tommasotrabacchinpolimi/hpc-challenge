@@ -238,8 +238,11 @@ public:
 
         int iters, total_iterations;
         double dot_result = 0;
-#pragma omp parallel default(none) shared(Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
+        MPI_Request request_gather;
+
+#pragma omp parallel default(none) shared(request_gather, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
         {
+
 
             for (iters = 1; iters <= max_iters; iters++) {
 
@@ -254,11 +257,10 @@ public:
                     dot_result = 0.0;
                     rr_new = 0.0;
                     MPI_Request request_broadcast;
-                    MPI_Request request_gather;
                     MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
 
-                    MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
-                                 (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
+                                 (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_gather);
                     //MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
                     //MPI_Wait(&request_broadcast, MPI_STATUS_IGNORE);
                 }
@@ -272,7 +274,7 @@ public:
                     }
                 }
 
-#pragma omp barrier
+
 
 #pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
@@ -285,7 +287,10 @@ public:
                     rr_new = 0.0;
                 }*/
 
-
+#pragma omp single
+                {
+                    MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
+                }
 #pragma omp for simd reduction(+:dot_result)
                 for (size_t i = 0; i < size; i++) {
                     dot_result += p[i] * Ap[i];
