@@ -257,17 +257,13 @@ public:
                     //std::cout << "iter  " << iters << std::endl;
                     dot_result = 0.0;
                     rr_new = 0.0;
-
-
+                    MPI_Request request_broadcast;
+                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
                     MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
                                  (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_gather);
 
                 }
-#pragma omp single nowait
-                {
-                    MPI_Request request_broadcast;
-                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
-                }
+
 
 #pragma omp for simd nowait
                 for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
