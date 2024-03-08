@@ -88,7 +88,7 @@ private:
     size_t mem_alignment = 64;
     MatrixData matrixData;
     int rank;
-    int num_threads = 100;
+    int num_threads = 50;
 };
 
 
