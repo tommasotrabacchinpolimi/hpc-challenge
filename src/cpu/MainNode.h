@@ -83,13 +83,16 @@ public:
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[size];
+
+        double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
         //std::cout << "check1" << std::endl;
 
 
-#pragma omp parallel for default(none) shared(p, Ap, r) num_threads(100)
+#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
             Ap[i] = 0.0;
+            Ap_[i] = 0.0;
             sol[i] = 0;
             r[i] = rhs[i];
         }
@@ -100,12 +103,17 @@ public:
         int iters, total_iterations;
         long comm_overhead = 0;
         double dot_result = 0;
-#pragma omp parallel default(none) shared(comm_overhead, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
+#pragma omp parallel default(none) shared(Ap_, comm_overhead, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
         {
 
             for (iters = 1; iters <= max_iters; iters++) {
 
-#pragma omp single
+#pragma omp for
+                for(int i = 0; i < myMatrixData.partial_size; i++) {
+                    Ap_[i] = Ap[i];
+                }
+
+#pragma omp master
                 {
 
                     auto tmp1 = std::chrono::high_resolution_clock::now();
@@ -121,13 +129,19 @@ public:
                 }
 #pragma omp for simd nowait
                 for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
-                    Ap[i] = 0.0;
+                    Ap_[i] = 0.0;
 #pragma omp simd
                     for (size_t j = 0; j < size; j++) {
-                        Ap[i] += matrix[i * size + j] * p[j];
+                        Ap_[i] += matrix[i * size + j] * p[j];
                     }
                 }
 
+#pragma omp barrier
+
+#pragma omp for
+                for(int i = 0; i < myMatrixData.partial_size; i++) {
+                    Ap[i] = Ap_[i];
+                }
 
 #pragma omp single
                 {
