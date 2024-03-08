@@ -224,7 +224,7 @@ public:
         //std::cout << "check1" << std::endl;
 
 
-#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(200)
+#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(num_threads)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
             Ap[i] = 0.0;
@@ -240,7 +240,7 @@ public:
         double dot_result = 0;
         MPI_Request request_gather;
 
-#pragma omp parallel default(none) shared(std::cout, request_gather, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(200)
+#pragma omp parallel default(none) shared(std::cout, request_gather, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(num_threads)
         {
 
 
@@ -365,7 +365,7 @@ private:
         is.read((char*)&size,sizeof(size_t));
         is.read((char*)&tmp,sizeof(size_t));
         rhs.resize(size);
-#pragma omp parallel for default(none) num_threads(200)
+#pragma omp parallel for default(none) num_threads(num_threads)
         for(int i = 0; i < size; i++) {
             rhs[i] = 0;
         }
@@ -400,7 +400,7 @@ private:
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
 
-#pragma omp parallel for default(none) num_threads(200)
+#pragma omp parallel for default(none) num_threads(num_threads)
         for(int i = 0; i < partial_size[0] * size; i++) {
             matrix[i] = 0.0;
         }
@@ -460,6 +460,8 @@ private:
     MatrixData myMatrixData;
     int mem_alignment = 64;
     size_t max_memory = 2e30 * 16;
+
+    int num_threads = 50;
 
 
 
