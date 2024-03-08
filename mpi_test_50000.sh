@@ -12,7 +12,4 @@ module load ifpgasdk && module load 520nmx && module load CMake && module load i
 cd build
 make mpi
 
-srun mpi /project/home/p200301/tests/matrix30000.bin /project/home/p200301/tests/rhs30000.bin output_mpi.bin 30000 1e-16
-srun mpi /project/home/p200301/tests/matrix40000.bin /project/home/p200301/tests/rhs40000.bin output_mpi.bin 40000 1e-16
 srun mpi /project/home/p200301/tests/matrix50000.bin /project/home/p200301/tests/rhs50000.bin output_mpi.bin 50000 1e-16
-srun mpi /project/home/p200301/tests/matrix70000.bin /project/home/p200301/tests/rhs70000.bin output_mpi.bin 70000 1e-16
