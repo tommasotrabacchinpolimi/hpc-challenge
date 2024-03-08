@@ -26,6 +26,29 @@ public:
 
     void compute() {
 
+        int world_size;
+        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+        MPI_Comm communicator;
+        int new_root;
+        MPI_Group world_group;
+        MPI_Comm_group(MPI_COMM_WORLD, &world_group);
+        for(int i = 1; i < world_size; i++) {
+
+            int ranks[] = {0, i};
+            MPI_Group new_group;
+            MPI_Group_incl(world_group, 2, ranks, &new_group);
+            MPI_Comm new_communicator;
+            MPI_Comm_create(MPI_COMM_WORLD, new_group, &new_communicator);
+            if(i == rank) {
+                communicator = new_communicator;
+                MPI_Bcast(&new_root,1, MPI_INTEGER, NULL, MPI_COMM_WORLD);
+            }
+            else {
+                int tmp;
+                MPI_Bcast(&tmp, 1, MPI_INTEGER, NULL, MPI_COMM_WORLD);
+            }
+        }
+
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
 #pragma omp parallel for default(none) shared(p) num_threads(num_threads)
@@ -38,7 +61,7 @@ public:
         }
         int cont = 0;
 
-#pragma omp parallel default(none) shared(p, Ap, matrixData, cont) num_threads(num_threads)
+#pragma omp parallel default(none) shared(communicator, p, Ap, matrixData, cont) num_threads(num_threads)
         {
             while (cont < size) {
 
@@ -46,7 +69,7 @@ public:
                 {
                     MPI_Request r;
 
-                    MPI_Ibcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &r);
+                    MPI_Ibcast(p, size, MPI_DOUBLE, 0, communicator, &r);
                     MPI_Wait(&r, MPI_STATUS_IGNORE);
                 }
 
