@@ -252,15 +252,13 @@ public:
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[size];
 
-        double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
         //std::cout << "check1" << std::endl;
 
 
-#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(num_threads)
+#pragma omp parallel for default(none) shared(p, Ap, r) num_threads(num_threads)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
             Ap[i] = 0.0;
-            Ap_[i] = 0.0;
             sol[i] = 0;
             r[i] = rhs[i];
         }
@@ -273,16 +271,12 @@ public:
         MPI_Request request_gather;
         long overhead = 0;
 
-#pragma omp parallel default(none) shared(overhead, std::cout, request_gather, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(num_threads)
+#pragma omp parallel default(none) shared(overhead, std::cout, request_gather, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(num_threads)
         {
 
 
             for (iters = 1; iters <= max_iters; iters++) {
 
-/*#pragma omp for nowait
-                for(int i = 0; i < myMatrixData.partial_size; i++) {
-                    Ap_[i] = Ap[i];
-                }*/
 
 
 #pragma omp master
@@ -307,18 +301,6 @@ public:
                 }
 
 
-
-/*#pragma omp for
-                for(int i = 0; i < myMatrixData.partial_size; i++) {
-                    //Ap[i] = Ap_[i];
-                }
-                */
-
-/*#pragma omp single
-                {
-                    dot_result = 0.0;
-                    rr_new = 0.0;
-                }*/
 
 #pragma omp master
                 {

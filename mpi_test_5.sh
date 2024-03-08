@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --qos=default                      # SLURM qos
-#SBATCH --nodes=10                         # number of nodes
-#SBATCH --ntasks=10                         # number of tasks
+#SBATCH --nodes=5                         # number of nodes
+#SBATCH --ntasks=5                         # number of tasks
 #SBATCH --ntasks-per-node=1                # number of tasks per node
 #SBATCH --time=00:20:00                    # time (HH:MM:SS)
 #SBATCH --partition=cpu                    # partition
