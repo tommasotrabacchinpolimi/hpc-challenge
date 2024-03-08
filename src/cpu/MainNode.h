@@ -239,8 +239,9 @@ public:
         int iters, total_iterations;
         double dot_result = 0;
         MPI_Request request_gather;
+        long overhead = 0;
 
-#pragma omp parallel default(none) shared(std::cout, request_gather, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(num_threads)
+#pragma omp parallel default(none) shared(overhead, std::cout, request_gather, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(num_threads)
         {
 
 
@@ -288,7 +289,12 @@ public:
 
 #pragma omp master
                 {
+                    auto tmp1 = std::chrono::high_resolution_clock::now();
                     MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
+                    auto tmp2 = std::chrono::high_resolution_clock::now();
+                    overhead += std::chrono::duration_cast<std::chrono::microseconds>(tmp2 - tmp1).count();
+
+
                 }
 #pragma omp barrier
 
@@ -341,6 +347,8 @@ public:
         {
             printf("Did not converge in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
         }
+
+        std::cout << "overhead = " <<overhead<<std::endl;
 
                 write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
 
