@@ -243,7 +243,7 @@ public:
 
             for (iters = 1; iters <= max_iters; iters++) {
 
-#pragma omp for
+#pragma omp for nowait
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
                     Ap_[i] = Ap[i];
                 }
@@ -251,6 +251,8 @@ public:
 
 #pragma omp single nowait
                 {
+                    dot_result = 0.0;
+                    rr_new = 0.0;
                     MPI_Request request_broadcast;
                     MPI_Request request_gather;
                     MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
@@ -277,11 +279,11 @@ public:
                     Ap[i] = Ap_[i];
                 }
 
-#pragma omp single
+/*#pragma omp single
                 {
                     dot_result = 0.0;
                     rr_new = 0.0;
-                }
+                }*/
 
 
 #pragma omp for simd reduction(+:dot_result)
