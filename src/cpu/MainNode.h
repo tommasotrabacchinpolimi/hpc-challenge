@@ -415,10 +415,10 @@ private:
         is.read((char*)&buff, sizeof(size_t));
         is.read((char*)matrix, size * partial_size[0] * sizeof(double));
         //check_matrix(matrix, partial_size[0], 0);
-
+        MPI_Request r;
         for(int i = 1; i < world_size; i++) {
             is.read((char*)matrix_, size * partial_size[i] * sizeof(double));
-            MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            MPI_Ibsend(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &r);
         }
         is.close();
         delete[] matrix_;
@@ -461,7 +461,7 @@ private:
     int mem_alignment = 64;
     size_t max_memory = 2e30 * 16;
 
-    int num_threads = 50;
+    int num_threads = 100;
 
 
 
