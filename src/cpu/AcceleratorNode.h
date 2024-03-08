@@ -40,7 +40,7 @@ public:
         }
         int cont = 0;
 
-#pragma omp parallel default(none) shared(communicator, p, Ap, matrixData, cont) num_threads(num_threads)
+#pragma omp parallel default(none) shared(p, Ap, matrixData, cont) num_threads(num_threads)
         {
             while (cont < size) {
 
@@ -48,7 +48,7 @@ public:
                 {
                     MPI_Request r;
 
-                    MPI_Ibcast(p, size, MPI_DOUBLE, 0, communicator, &r);
+                    MPI_Ibcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &r);
                     MPI_Wait(&r, MPI_STATUS_IGNORE);
                 }
 
