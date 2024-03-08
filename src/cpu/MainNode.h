@@ -73,7 +73,7 @@ public:
     }
 
     void compute_conjugate_gradient() {
-        //std::cout << "starting to compute" << std::endl;
+        std::cout << "starting to compute" << std::endl;
         double alpha;
         double beta;
         double rr;
