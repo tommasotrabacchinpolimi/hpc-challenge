@@ -299,10 +299,10 @@ public:
 
 #pragma omp for simd nowait
                 for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
-                    Ap_[i] = 0.0;
+                    Ap[i] = 0.0;
 #pragma omp simd
                     for (size_t j = 0; j < size; j++) {
-                        Ap_[i] += matrix[i * size + j] * p[j];
+                        Ap[i] += matrix[i * size + j] * p[j];
                     }
                 }
 
@@ -310,7 +310,7 @@ public:
 
 #pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
-                    Ap[i] = Ap_[i];
+                    //Ap[i] = Ap_[i];
                 }
 
 /*#pragma omp single
