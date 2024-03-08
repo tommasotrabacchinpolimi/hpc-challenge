@@ -109,9 +109,13 @@ public:
                 {
 
                     auto tmp1 = std::chrono::high_resolution_clock::now();
-                    MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-                    MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
-                                (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    MPI_Request request_broadcast;
+                    MPI_Request request_gather;
+                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
+                    MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
+                                (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_gather);
+                    MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
+                    MPI_Wait(&request_broadcast, MPI_STATUS_IGNORE);
                     auto tmp2 = std::chrono::high_resolution_clock::now();
                     comm_overhead += std::chrono::duration_cast<std::chrono::microseconds>(tmp2 - tmp1).count();
                 }
