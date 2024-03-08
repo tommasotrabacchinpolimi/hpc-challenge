@@ -461,7 +461,7 @@ private:
     int mem_alignment = 64;
     size_t max_memory = 2e30 * 16;
 
-    int num_threads = 25;
+    int num_threads = 20;
 
 
 
