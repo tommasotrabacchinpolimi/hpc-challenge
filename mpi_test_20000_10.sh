@@ -14,9 +14,9 @@ make mpi
 
 
 
-srun mpi /project/home/p200301/tests/matrix10000.bin /project/home/p200301/tests/rhs10000.bin output_mpi.bin 10000 1e-16
-srun mpi /project/home/p200301/tests/matrix72000.bin /project/home/p200301/tests/rhs20000.bin output_mpi.bin 20000 1e-16
-srun mpi /project/home/p200301/tests/matrix30000.bin /project/home/p200301/tests/rhs30000.bin output_mpi.bin 30000 1e-16
-srun mpi /project/home/p200301/tests/matrix40000.bin /project/home/p200301/tests/rhs74000.bin output_mpi.bin 40000 1e-16
-srun mpi /project/home/p200301/tests/matrix50000.bin /project/home/p200301/tests/rhs50000.bin output_mpi.bin 50000 1e-16
+#srun mpi /project/home/p200301/tests/matrix10000.bin /project/home/p200301/tests/rhs10000.bin output_mpi.bin 10000 1e-16
+#srun mpi /project/home/p200301/tests/matrix72000.bin /project/home/p200301/tests/rhs20000.bin output_mpi.bin 20000 1e-16
+#srun mpi /project/home/p200301/tests/matrix30000.bin /project/home/p200301/tests/rhs30000.bin output_mpi.bin 30000 1e-16
+#srun mpi /project/home/p200301/tests/matrix40000.bin /project/home/p200301/tests/rhs74000.bin output_mpi.bin 40000 1e-16
+#srun mpi /project/home/p200301/tests/matrix50000.bin /project/home/p200301/tests/rhs50000.bin output_mpi.bin 50000 1e-16
 srun mpi /project/home/p200301/tests/matrix70000.bin /project/home/p200301/tests/rhs70000.bin output_mpi.bin 70000 1e-16
