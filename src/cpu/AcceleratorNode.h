@@ -16,7 +16,7 @@ public:
         MPI_Type_commit(&matrixDataType);
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
-        #pragma omp parallel for default(none) num_threads(100)
+        #pragma omp parallel for default(none) num_threads(num_threads)
         for(int i = 0; i < size * matrixData.partial_size; i++) {
             matrix[i] = 0.0;
         }
@@ -30,17 +30,17 @@ public:
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
-#pragma omp parallel for default(none) shared(p) num_threads(100)
+#pragma omp parallel for default(none) shared(p) num_threads(num_threads)
         for(int i = 0; i < size;i++) {
             p[i] = 0;
         }
-#pragma omp parallel for default(none) shared(Ap) num_threads(100)
+#pragma omp parallel for default(none) shared(Ap) num_threads(num_threads)
         for(int i = 0; i < matrixData.partial_size;i++) {
             Ap[i] = 0;
         }
         int cont = 0;
 
-#pragma omp parallel default(none) shared(p, Ap, matrixData, cont) num_threads(100)
+#pragma omp parallel default(none) shared(p, Ap, matrixData, cont) num_threads(num_threads)
         {
             while (cont < size) {
 
@@ -90,6 +90,7 @@ private:
     size_t mem_alignment = 64;
     MatrixData matrixData;
     int rank;
+    int num_threads = 300;
 };
 
 
