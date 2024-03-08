@@ -275,11 +275,7 @@ public:
                     }
                 }
 
-#pragma omp master
-                {
-                    MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
-                }
-#pragma omp barrier
+
 
 #pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
@@ -292,6 +288,11 @@ public:
                     rr_new = 0.0;
                 }*/
 
+#pragma omp master
+                {
+                    MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
+                }
+#pragma omp barrier
 
 #pragma omp for simd reduction(+:dot_result)
                 for (size_t i = 0; i < size; i++) {
