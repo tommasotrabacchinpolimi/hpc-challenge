@@ -73,23 +73,7 @@ public:
 
     }
 
-    void compute_conjugate_gradient_multiple_communicators() {
-
-        MPI_Comm* communicators = new MPI_Comm [world_size - 1];
-        int* new_roots = new int[world_size - 1];
-        MPI_Group world_group;
-        MPI_Comm_group(MPI_COMM_WORLD, &world_group);
-        for(int i = 1; i < world_size; i++) {
-            int ranks[] = {0, i};
-            MPI_Group new_group;
-            MPI_Group_incl(world_group, 2, ranks, &new_group);
-            MPI_Comm new_communicator;
-            MPI_Comm_create(MPI_COMM_WORLD, new_group, &new_communicator);
-            communicators[i-1] = new_communicator;
-            MPI_Comm_rank(new_communicator, &new_roots[i-1]);
-            MPI_Bcast(&new_roots[i-1], 1, MPI_INTEGER, new_roots[i-1], MPI_COMM_WORLD);
-        }
-
+    void compute_conjugate_gradient1() {
         double alpha;
         double beta;
         double rr;
@@ -104,7 +88,143 @@ public:
         //std::cout << "check1" << std::endl;
 
 
-#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(num_threads)
+#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
+        for(int i = 0; i < size; i++) {
+            p[i] = rhs[i];
+            Ap[i] = 0.0;
+            Ap_[i] = 0.0;
+            sol[i] = 0;
+            r[i] = rhs[i];
+        }
+
+        bb = dot(rhs,rhs,size);
+        rr = bb;
+
+        int iters, total_iterations;
+        long comm_overhead = 0;
+        double dot_result = 0;
+#pragma omp parallel default(none) shared(Ap_, comm_overhead, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
+        {
+
+            for (iters = 1; iters <= max_iters; iters++) {
+
+#pragma omp for
+                for(int i = 0; i < myMatrixData.partial_size; i++) {
+                    Ap_[i] = Ap[i];
+                }
+
+#pragma omp master
+                {
+
+                    auto tmp1 = std::chrono::high_resolution_clock::now();
+                    MPI_Request request_broadcast;
+                    MPI_Request request_gather;
+                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
+                    MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
+                                (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_gather);
+                    MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
+                    MPI_Wait(&request_broadcast, MPI_STATUS_IGNORE);
+                    auto tmp2 = std::chrono::high_resolution_clock::now();
+                    comm_overhead += std::chrono::duration_cast<std::chrono::microseconds>(tmp2 - tmp1).count();
+                }
+#pragma omp for simd nowait
+                for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
+                    Ap_[i] = 0.0;
+#pragma omp simd
+                    for (size_t j = 0; j < size; j++) {
+                        Ap_[i] += matrix[i * size + j] * p[j];
+                    }
+                }
+
+#pragma omp barrier
+
+#pragma omp for
+                for(int i = 0; i < myMatrixData.partial_size; i++) {
+                    Ap[i] = Ap_[i];
+                }
+
+#pragma omp single
+                {
+                    dot_result = 0.0;
+                    rr_new = 0.0;
+                }
+
+
+#pragma omp for simd reduction(+:dot_result)
+                for (size_t i = 0; i < size; i++) {
+                    dot_result += p[i] * Ap[i];
+                }
+                alpha = rr / dot_result;
+
+
+#pragma omp for simd nowait
+                for(size_t i = 0; i < size; i++) {
+                    sol[i] = alpha * p[i] + sol[i];
+                }
+
+
+#pragma omp for simd nowait
+                for(size_t i = 0; i < size; i++) {
+                    r[i] = -alpha * Ap[i] + r[i];
+                }
+
+
+#pragma omp for simd reduction(+:rr_new)
+                for (size_t i = 0; i < size; i++) {
+                    rr_new += r[i] * r[i];
+                }
+
+
+                beta = rr_new / rr;
+                rr = rr_new;
+                if (std::sqrt(rr / bb) < tol) {
+#pragma omp single
+                    {
+                        total_iterations = iters;
+                    }
+                    break; }
+
+#pragma omp for simd
+                for(size_t i = 0; i < size; i++) {
+                    p[i] =  r[i] + beta * p[i];
+                }
+            }
+        }
+
+        if(iters <= max_iters)
+        {
+            printf("Converged in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
+        }
+        else
+        {
+            printf("Did not converge in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
+        }
+        std::cout << "communication overhead " << comm_overhead << std::endl,
+
+        write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
+
+        delete[] Ap;
+        delete[] p;
+
+        //MPI_Abort(MPI_COMM_WORLD, 0);
+    }
+
+    void compute_conjugate_gradient() {
+        double alpha;
+        double beta;
+        double rr;
+        double rr_new;
+        double bb;
+        std::vector<double> r(size);
+
+        double* p = new (std::align_val_t(mem_alignment))double[size];
+        double* Ap = new (std::align_val_t(mem_alignment))double[size];
+
+        double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
+        //std::cout << "check1" << std::endl;
+
+
+#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
             Ap[i] = 0.0;
@@ -118,34 +238,28 @@ public:
 
         int iters, total_iterations;
         double dot_result = 0;
-        MPI_Request request_gather;
-        long overhead = 0;
-
-#pragma omp parallel default(none) shared(overhead, std::cout, request_gather, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(num_threads)
+#pragma omp parallel default(none) shared(Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
         {
-
 
             for (iters = 1; iters <= max_iters; iters++) {
 
-#pragma omp for nowait
+#pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
                     Ap_[i] = Ap[i];
                 }
 
 
-
-
-#pragma omp master
+#pragma omp single nowait
                 {
-                    dot_result = 0.0;
-                    rr_new = 0.0;
                     MPI_Request request_broadcast;
+                    MPI_Request request_gather;
                     MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
-                    MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
-                                 (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_gather);
 
+                    MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
+                                 (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    //MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
+                    //MPI_Wait(&request_broadcast, MPI_STATUS_IGNORE);
                 }
-
 
 #pragma omp for simd nowait
                 for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
@@ -156,29 +270,19 @@ public:
                     }
                 }
 
-
+#pragma omp barrier
 
 #pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
                     Ap[i] = Ap_[i];
                 }
 
-/*#pragma omp single
+#pragma omp single
                 {
                     dot_result = 0.0;
                     rr_new = 0.0;
-                }*/
-
-#pragma omp master
-                {
-                    auto tmp1 = std::chrono::high_resolution_clock::now();
-                    MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
-                    auto tmp2 = std::chrono::high_resolution_clock::now();
-                    overhead += std::chrono::duration_cast<std::chrono::microseconds>(tmp2 - tmp1).count();
-
-
                 }
-#pragma omp barrier
+
 
 #pragma omp for simd reduction(+:dot_result)
                 for (size_t i = 0; i < size; i++) {
@@ -229,141 +333,6 @@ public:
         {
             printf("Did not converge in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
         }
-
-        std::cout << "overhead = " <<overhead<<std::endl;
-
-        write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
-
-        delete[] Ap;
-        delete[] p;
-
-        //MPI_Abort(MPI_COMM_WORLD, 0);
-    }
-
-
-    void compute_conjugate_gradient() {
-        double alpha;
-        double beta;
-        double rr;
-        double rr_new;
-        double bb;
-        std::vector<double> r(size);
-
-        double* p = new (std::align_val_t(mem_alignment))double[size];
-        double* Ap = new (std::align_val_t(mem_alignment))double[size];
-
-        //std::cout << "check1" << std::endl;
-
-
-#pragma omp parallel for default(none) shared(p, Ap, r) num_threads(num_threads)
-        for(int i = 0; i < size; i++) {
-            p[i] = rhs[i];
-            Ap[i] = 0.0;
-            sol[i] = 0;
-            r[i] = rhs[i];
-        }
-
-        bb = dot(rhs,rhs,size);
-        rr = bb;
-
-        int iters, total_iterations;
-        double dot_result = 0;
-        MPI_Request request_gather;
-        long overhead = 0;
-
-#pragma omp parallel default(none) shared(overhead, std::cout, request_gather, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(num_threads)
-        {
-
-
-            for (iters = 1; iters <= max_iters; iters++) {
-
-
-
-#pragma omp master
-                {
-                    dot_result = 0.0;
-                    rr_new = 0.0;
-                    MPI_Request request_broadcast;
-                    MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
-                    MPI_Igatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
-                                 (&(offset[0])), MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_gather);
-
-                }
-
-
-#pragma omp for simd nowait
-                for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
-                    Ap[i] = 0.0;
-#pragma omp simd
-                    for (size_t j = 0; j < size; j++) {
-                        Ap[i] += matrix[i * size + j] * p[j];
-                    }
-                }
-
-
-
-#pragma omp master
-                {
-                    auto tmp1 = std::chrono::high_resolution_clock::now();
-                    MPI_Wait(&request_gather, MPI_STATUS_IGNORE);
-                    auto tmp2 = std::chrono::high_resolution_clock::now();
-                    overhead += std::chrono::duration_cast<std::chrono::microseconds>(tmp2 - tmp1).count();
-
-
-                }
-#pragma omp barrier
-
-#pragma omp for simd reduction(+:dot_result)
-                for (size_t i = 0; i < size; i++) {
-                    dot_result += p[i] * Ap[i];
-                }
-                alpha = rr / dot_result;
-
-
-#pragma omp for simd nowait
-                for(size_t i = 0; i < size; i++) {
-                    sol[i] = alpha * p[i] + sol[i];
-                }
-
-
-#pragma omp for simd nowait
-                for(size_t i = 0; i < size; i++) {
-                    r[i] = -alpha * Ap[i] + r[i];
-                }
-
-
-#pragma omp for simd reduction(+:rr_new)
-                for (size_t i = 0; i < size; i++) {
-                    rr_new += r[i] * r[i];
-                }
-
-
-                beta = rr_new / rr;
-                rr = rr_new;
-                if (std::sqrt(rr / bb) < tol) {
-#pragma omp single
-                    {
-                        total_iterations = iters;
-                    }
-                    break; }
-
-#pragma omp for simd
-                for(size_t i = 0; i < size; i++) {
-                    p[i] =  r[i] + beta * p[i];
-                }
-            }
-        }
-
-        if(iters <= max_iters)
-        {
-            printf("Converged in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
-        }
-        else
-        {
-            printf("Did not converge in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
-        }
-
-        std::cout << "overhead = " <<overhead<<std::endl;
 
                 write_matrix_to_file(output_file_path.c_str(), sol.data(), size, 1);
 
@@ -386,7 +355,7 @@ private:
         is.read((char*)&size,sizeof(size_t));
         is.read((char*)&tmp,sizeof(size_t));
         rhs.resize(size);
-#pragma omp parallel for default(none) num_threads(num_threads)
+#pragma omp parallel for default(none) num_threads(100)
         for(int i = 0; i < size; i++) {
             rhs[i] = 0;
         }
@@ -421,7 +390,7 @@ private:
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
 
-#pragma omp parallel for default(none) num_threads(num_threads)
+#pragma omp parallel for default(none) num_threads(100)
         for(int i = 0; i < partial_size[0] * size; i++) {
             matrix[i] = 0.0;
         }
@@ -436,6 +405,7 @@ private:
         is.read((char*)&buff, sizeof(size_t));
         is.read((char*)matrix, size * partial_size[0] * sizeof(double));
         //check_matrix(matrix, partial_size[0], 0);
+
         for(int i = 1; i < world_size; i++) {
             is.read((char*)matrix_, size * partial_size[i] * sizeof(double));
             MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
@@ -480,8 +450,6 @@ private:
     MatrixData myMatrixData;
     int mem_alignment = 64;
     size_t max_memory = 2e30 * 16;
-
-    int num_threads = 100;
 
 
 
