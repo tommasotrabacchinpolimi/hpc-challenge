@@ -46,8 +46,10 @@ public:
 
 #pragma omp single
                 {
+                    MPI_Request r;
                     cont++;
-                    MPI_Bcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                    MPI_Ibcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &r);
+                    MPI_Wait(&r, MPI_STATUS_IGNORE);
                 }
 
 #pragma omp for simd
@@ -60,8 +62,11 @@ public:
                 }
 #pragma omp single
                 {
-                    MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
-                                MPI_COMM_WORLD);
+                    MPI_Request r;
+                    MPI_Igatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
+                                MPI_COMM_WORLD, &r);
+                    MPI_Wait(&r, MPI_STATUS_IGNORE);
+
                 }
 
 
