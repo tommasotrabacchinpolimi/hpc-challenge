@@ -279,10 +279,10 @@ public:
 
             for (iters = 1; iters <= max_iters; iters++) {
 
-#pragma omp for nowait
+/*#pragma omp for nowait
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
                     Ap_[i] = Ap[i];
-                }
+                }*/
 
 
 #pragma omp master
@@ -308,10 +308,11 @@ public:
 
 
 
-#pragma omp for
+/*#pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
                     //Ap[i] = Ap_[i];
                 }
+                */
 
 /*#pragma omp single
                 {
