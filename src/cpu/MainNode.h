@@ -254,7 +254,7 @@ public:
 
 #pragma omp master
                 {
-                    std::cout << "iter  " << iters << std::endl,
+                    std::cout << "iter  " << iters << std::endl;
                     dot_result = 0.0;
                     rr_new = 0.0;
                     MPI_Request request_broadcast;
