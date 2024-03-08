@@ -249,7 +249,7 @@ public:
                 }
 
 
-#pragma omp single
+#pragma omp single nowait
                 {
                     MPI_Request request_broadcast;
                     MPI_Request request_gather;
