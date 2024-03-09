@@ -292,17 +292,24 @@ int main(int argc, char ** argv)
 
 
     if(argc > 1) size = atoi(argv[1]);
-    if(argc > 2) max_iters = atoi(argv[1]);
-    if(argc > 3) rel_error = atof(argv[2]);
-    if(argc > 4) serial_trials = atoi(argv[3]);
-    if(argc > 5) parallel_trials = atoi(argv[4]);
-    if(argc > 6) threads_number = atoi(argv[5]);
-
+    //if(argc > 1) max_iters = atoi(argv[1]);
+    if(argc > 2) rel_error = atof(argv[2]);
+    if(argc > 3) serial_trials = atoi(argv[3]);
+    if(argc > 4) parallel_trials = atoi(argv[4]);
+    if(argc > 5) threads_number = atoi(argv[5]);
+    max_iters = 2;
     double* matrix;
     double* rhs;
     size_t ignore;
-    read_matrix_from_file(argv[6], &matrix, &size, &size, threads_number);
-    read_matrix_from_file(argv[7], &rhs, &ignore, &ignore, threads_number);
+
+
+
+    //read_matrix_from_file(argv[6], &matrix, &size, &size, threads_number);
+    //read_matrix_from_file(argv[7], &rhs, &ignore, &ignore, threads_number);
+
+    generate_matrix(size, &matrix, threads_number);
+    generate_rhs(size, 1, &rhs, threads_number);
+
 
     printf("Command line arguments:\n");
     printf("  matrix_size: %d\n", size);
