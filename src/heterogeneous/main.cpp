@@ -257,14 +257,14 @@ int main(int argc, char** argv) {
         execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
 
         std::cout << "execution time(us) = " << execution_time_fpga << std::endl;
-        MPI_Abort(MPI_COMM_WORLD, 0);
-
+        MPI_Finalize();
 
     } else {
         AcceleratorNode<FPGAMatrixVectorMultiplier> acceleratorNode;
         acceleratorNode.init();
         acceleratorNode.handshake();
         acceleratorNode.compute();
+        MPI_Finalize();
     }
 
 
