@@ -1,4 +1,4 @@
-# OpenMP and FPGA versions
+# OpenMP, MPI + openMP and  FPGA versions
 
 This folder contains the OpenMP, MPI+OpenMP and FPGA implementatiions of the Conjugate Gradient algorithm
 
@@ -25,7 +25,10 @@ And finally,
 make
 ```
 At this point you can run the code.
-There are 6 different versions available.
+
+For FPGA versions it is necessary to download the needed kernels.
+They can be found at this **[link](https://drive.google.com/file/d/1vZyDhI-ukpShtWAkAV_XjTLTUKVczaEf/view?usp=sharing)**
+When downloaded, they should be pasted in ths /src/fpga folder.
 ## OpenMP
 In order to run the OpenMP version
 ```
@@ -63,3 +66,4 @@ To run this version on Meluxina, after reserving an appropriate number of nodes
 ```
 srun mpi matrix_path rhs_path output_path max_iters rel_err threads_number
 ```
+
