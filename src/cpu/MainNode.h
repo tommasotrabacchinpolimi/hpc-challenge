@@ -379,7 +379,7 @@ private:
     }
 
     void read_rhs_test() {
-        size = 1000;
+        size = 10;
         rhs.resize(size);
 #pragma omp parallel for default(none) num_threads(100)
         for(int i = 0; i < size; i++) {
@@ -452,20 +452,25 @@ private:
 
 
 
-        check_matrix(matrix, partial_size[0], 0);
+        //check_matrix(matrix, partial_size[0], 0);
 
         for(int i = 0; i < world_size; i++) {
             for(size_t j = 0; j < size * partial_size[i]; j++) {
                 size_t row = offset[i] + j / size;
                 size_t column = j % size;
+                if(column == 0) {
+                    std::cout << std::endl;
+                }
                 if (row == column) {
+                    std::cout << "2 ";
                     if(i == 0) {
                         matrix[j] = 2;
                     } else {
                         matrix_[j] = 2;
                     }
 
-                } else if(row == column + 1 || row == column  - 1) {
+                } else if((row == column + 1) || (row == column  - 1)) {
+                    std::cout << "-1 ";
                     if(i == 0) {
                         matrix[j] = -1;
                     } else {
