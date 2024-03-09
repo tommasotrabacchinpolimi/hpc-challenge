@@ -235,17 +235,20 @@ int main(int argc, char** argv) {
 
 
     if(rank == 0) {
-        double* matrix;
-        double* rhs;
+        //double* matrix;
+        //double* rhs;
         size_t size;
         size_t tmp;
         int max_iter = atoi(argv[4]);
         double tol = atof(argv[5]);
-        read_matrix_from_file(argv[1], &matrix, &size, &size);
-        read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
-        MainNode<FPGAMatrixVectorMultiplier> mainNode(reinterpret_cast<std::string &>(argv[1]),
-                                                      reinterpret_cast<std::string &>(argv[2]),
-                                                      reinterpret_cast<std::string &>(argv[3]), max_iter, tol);
+        //read_matrix_from_file(argv[1], &matrix, &size, &size);
+        //read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
+        std::string matrix_path = argv[1];
+        std::string rhs_path = argv[2];
+        std::string output_path = argv[3];
+        MainNode<FPGAMatrixVectorMultiplier> mainNode(matrix_path,
+                                                      rhs_path,
+                                                      output_path, max_iter, tol);
         mainNode.init();
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
