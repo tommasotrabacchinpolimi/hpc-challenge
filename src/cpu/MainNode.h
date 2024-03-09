@@ -258,6 +258,7 @@ public:
 
 #pragma omp single nowait
                 {
+                    total_iterations = iters;
                     MPI_Request request_broadcast;
                     MPI_Request request_gather;
                     MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
@@ -319,10 +320,6 @@ public:
                 beta = rr_new / rr;
                 rr = rr_new;
                 if (std::sqrt(rr / bb) < tol) {
-#pragma omp single
-                    {
-                        total_iterations = iters;
-                    }
                     break; }
 
 #pragma omp for simd
