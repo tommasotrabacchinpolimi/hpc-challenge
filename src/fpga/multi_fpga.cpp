@@ -1,6 +1,4 @@
-//
-// Created by tomma on 29/02/2024.
-//
+
 
 #include "CL/opencl.h"
 #include <iostream>
