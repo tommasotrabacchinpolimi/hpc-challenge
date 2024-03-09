@@ -452,7 +452,7 @@ private:
 
 
 
-        //check_matrix(matrix, partial_size[0], 0);
+        check_matrix(matrix, partial_size[0], 0);
 
         for(int i = 0; i < world_size; i++) {
             for(size_t j = 0; j < size * partial_size[i]; j++) {
@@ -475,6 +475,8 @@ private:
             }
             if(i != 0) {
                 MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            } else {
+                check_matrix(matrix, partial_size[0], 0);
             }
         }
         delete[] matrix_;
