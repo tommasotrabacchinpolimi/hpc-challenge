@@ -239,6 +239,7 @@ int main(int argc, char** argv) {
         //double* rhs;
         size_t size;
         size_t tmp;
+        std::cout << "ciao" << std::endl;
         int max_iter = atoi(argv[4]);
         double tol = atof(argv[5]);
         //read_matrix_from_file(argv[1], &matrix, &size, &size);
