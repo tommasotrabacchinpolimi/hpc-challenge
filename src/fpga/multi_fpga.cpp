@@ -587,7 +587,7 @@ int main(int argc, char** argv) {
     conjugate_gradient_aligned2(matrix, rhs, sol, size, max_iters, tol, number_device_required, queues, context, kernels);
     auto stop = std::chrono::high_resolution_clock::now();
     long exe_time = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
-    std::cout << "execution tim = " << exe_time << std::endl;
+    std::cout << "execution time (us) = " << exe_time << std::endl;
     write_matrix_to_file(argv[3], sol, size, 1);
 
 

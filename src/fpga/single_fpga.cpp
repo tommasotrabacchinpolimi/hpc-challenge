@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
 
 
     long execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
-    std::cout << "execution time: " << execution_time_fpga << std::endl;
+    std::cout << "execution time (us): " << execution_time_fpga << std::endl;
 
     write_matrix_to_file(argv[3], sol, size, 1);
 

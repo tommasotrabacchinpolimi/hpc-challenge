@@ -169,7 +169,7 @@ public:
         double dot_result = 0;
         auto start = std::chrono::high_resolution_clock::now();
 
-#pragma omp parallel default(none) shared(Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
+#pragma omp parallel default(none) shared(FALSE, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
         {
 
             for (iters = 1; iters <= max_iters; iters++) {
