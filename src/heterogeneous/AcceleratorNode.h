@@ -5,6 +5,7 @@
 template<typename Accelerator>
 class AcceleratorNode {
 public:
+    AcceleratorNode(int threads_number) : threads_number(threads_number) {}
     void init() {
         accelerator.init();
     }
@@ -38,11 +39,11 @@ public:
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
         bool finish;
-#pragma omp parallel for default(none) shared(p) num_threads(100)
+        #pragma omp parallel for default(none) shared(p) num_threads(100)
         for(int i = 0; i < size;i++) {
             p[i] = 0;
         }
-#pragma omp parallel for default(none) shared(Ap) num_threads(100)
+        #pragma omp parallel for default(none) shared(Ap) num_threads(100)
         for(int i = 0; i < matrixData.partial_size;i++) {
             Ap[i] = 0;
         }
@@ -87,6 +88,7 @@ private:
     size_t mem_alignment = 64;
     MatrixData matrixData;
     int rank;
+    int threads_number;
 };
 
 

@@ -36,6 +36,11 @@ int main(int argc, char** argv) {
     MPI_Init(nullptr, nullptr);
     int rank;
     int world_size;
+    if(argc != 7) {
+        std::cout << "wrong number of parameters" << std::endl;
+        return 0;
+    }
+    int threads_number = atoi(argv[6]);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     long execution_time_fpga;
@@ -54,7 +59,7 @@ int main(int argc, char** argv) {
 
         MainNode mainNode(matrix_path,
                                                       rhs_path,
-                                                      output_path, max_iter, tol);
+                                                      output_path, max_iter, tol, threads_number);
 
         mainNode.init();
 
@@ -67,7 +72,7 @@ int main(int argc, char** argv) {
         std::cout << "execution time = " << execution_time_fpga << std::endl;
         MPI_Finalize();
     } else {
-        AcceleratorNode acceleratorNode;
+        AcceleratorNode acceleratorNode(threads_number);
         acceleratorNode.init();
         acceleratorNode.handshake();
         acceleratorNode.compute();

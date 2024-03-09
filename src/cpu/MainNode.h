@@ -17,7 +17,7 @@
 class MainNode {
 public:
 
-    MainNode(std::string&  matrix_file_path, std::string&  rhs_file_path, std::string& output_file_path, int max_iters, double tol) : matrix_file_path(std::move(matrix_file_path)), rhs_file_path(std::move(rhs_file_path)), output_file_path(output_file_path), max_iters(max_iters), tol(tol) {}
+    MainNode(std::string&  matrix_file_path, std::string&  rhs_file_path, std::string& output_file_path, int max_iters, double tol, int threads_number) : matrix_file_path(std::move(matrix_file_path)), rhs_file_path(std::move(rhs_file_path)), output_file_path(output_file_path), max_iters(max_iters), tol(tol), threads_number(threads_number) {}
 
     void init() {
 
@@ -94,7 +94,7 @@ public:
         double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
 
 
-#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
+        #pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(threads_number)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
             Ap[i] = 0.0;
@@ -109,18 +109,18 @@ public:
         int iters, total_iterations;
         double dot_result = 0;
         auto start = std::chrono::high_resolution_clock::now();
-#pragma omp parallel default(none) shared(FALSE, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
+        #pragma omp parallel default(none) shared(FALSE, Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(threads_number)
         {
 
             for (iters = 1; iters <= max_iters; iters++) {
 
-#pragma omp for
+                #pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
                     Ap_[i] = Ap[i];
                 }
 
 
-#pragma omp single nowait
+                #pragma omp single nowait
                 {
                     total_iterations = iters;
                     MPI_Request request_broadcast;
@@ -133,49 +133,49 @@ public:
 
                 }
 
-#pragma omp for simd nowait
+                #pragma omp for simd nowait
                 for (size_t i = 0; i < myMatrixData.partial_size; i += 1) {
                     Ap_[i] = 0.0;
-#pragma omp simd
+                    #pragma omp simd
                     for (size_t j = 0; j < size; j++) {
                         Ap_[i] += matrix[i * size + j] * p[j];
                     }
                 }
 
-#pragma omp barrier
+                #pragma omp barrier
 
-#pragma omp for
+                #pragma omp for
                 for(int i = 0; i < myMatrixData.partial_size; i++) {
                     Ap[i] = Ap_[i];
                 }
 
-#pragma omp single
+                #pragma omp single
                 {
                     dot_result = 0.0;
                     rr_new = 0.0;
                 }
 
 
-#pragma omp for simd reduction(+:dot_result)
+                #pragma omp for simd reduction(+:dot_result)
                 for (size_t i = 0; i < size; i++) {
                     dot_result += p[i] * Ap[i];
                 }
                 alpha = rr / dot_result;
 
 
-#pragma omp for simd nowait
+                #pragma omp for simd nowait
                 for(size_t i = 0; i < size; i++) {
                     sol[i] = alpha * p[i] + sol[i];
                 }
 
 
-#pragma omp for simd nowait
+                #pragma omp for simd nowait
                 for(size_t i = 0; i < size; i++) {
                     r[i] = -alpha * Ap[i] + r[i];
                 }
 
 
-#pragma omp for simd reduction(+:rr_new)
+                #pragma omp for simd reduction(+:rr_new)
                 for (size_t i = 0; i < size; i++) {
                     rr_new += r[i] * r[i];
                 }
@@ -186,7 +186,7 @@ public:
                 if (std::sqrt(rr / bb) < tol) {
                     break; }
 
-#pragma omp for simd
+                #pragma omp for simd
                 for(size_t i = 0; i < size; i++) {
                     p[i] =  r[i] + beta * p[i];
                 }
@@ -229,7 +229,7 @@ private:
         is.read((char*)&size,sizeof(size_t));
         is.read((char*)&tmp,sizeof(size_t));
         rhs.resize(size);
-#pragma omp parallel for default(none) num_threads(100)
+        #pragma omp parallel for default(none) num_threads(threads_number)
         for(int i = 0; i < size; i++) {
             rhs[i] = 0;
         }
@@ -239,7 +239,7 @@ private:
 
     void read_rhs_test() {
         rhs.resize(size);
-#pragma omp parallel for default(none) num_threads(100)
+        #pragma omp parallel for default(none) num_threads(threads_number)
         for(int i = 0; i < size; i++) {
             rhs[i] = 1;
         }
@@ -272,7 +272,7 @@ private:
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
 
-#pragma omp parallel for default(none) num_threads(100)
+        #pragma omp parallel for default(none) num_threads(threads_number)
         for(int i = 0; i < partial_size[0] * size; i++) {
             matrix[i] = 0.0;
         }
@@ -303,7 +303,7 @@ private:
         double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
         matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
 
-#pragma omp parallel for default(none) num_threads(100)
+        #pragma omp parallel for default(none) num_threads(threads_number)
         for(int i = 0; i < partial_size[0] * size; i++) {
             matrix[i] = 0.0;
         }
@@ -382,12 +382,12 @@ private:
     std::vector<double> rhs;
     std::vector<double> sol;
     double* matrix;
-    size_t total_device_number;
     int max_iters;
     double tol;
     MatrixData myMatrixData;
     int mem_alignment = 64;
-    size_t max_memory = 2e30 * 16;
+    size_t max_memory = 2e30 * 512;
+    int threads_number;
 
 
 

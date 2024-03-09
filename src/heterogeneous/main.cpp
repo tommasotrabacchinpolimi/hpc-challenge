@@ -226,9 +226,10 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t *
 int main(int argc, char** argv) {
     MPI_Init(nullptr, nullptr);
     int rank;
+    int threads_number = atoi(argv[6]);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     long execution_time_fpga;
-    if(argc != 6) {
+    if(argc != 7) {
         std::cout << "wrong number of parameters" << std::endl;
         MPI_Finalize();
         return 0;
@@ -250,7 +251,7 @@ int main(int argc, char** argv) {
         std::string output_path = argv[3];
         MainNode<FPGAMatrixVectorMultiplier> mainNode(matrix_path,
                                                       rhs_path,
-                                                      output_path, max_iter, tol);
+                                                      output_path, max_iter, tol, threads_number);
         mainNode.init();
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
@@ -262,7 +263,7 @@ int main(int argc, char** argv) {
         MPI_Finalize();
 
     } else {
-        AcceleratorNode<FPGAMatrixVectorMultiplier> acceleratorNode;
+        AcceleratorNode<FPGAMatrixVectorMultiplier> acceleratorNode(threads_number);
         acceleratorNode.init();
         acceleratorNode.handshake();
         acceleratorNode.compute();

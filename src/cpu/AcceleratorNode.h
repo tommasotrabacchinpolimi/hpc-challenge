@@ -4,6 +4,7 @@
 #include "mpi.h"
 class AcceleratorNode {
 public:
+    AcceleratorNode(int threads_number) : threads_number(threads_number){}
     void init() {
     }
 
@@ -16,7 +17,7 @@ public:
         MPI_Type_commit(&matrixDataType);
         MPI_Scatter(NULL, 0, matrixDataType, &matrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
         matrix = new double[size * matrixData.partial_size];
-        #pragma omp parallel for default(none) num_threads(100)
+        #pragma omp parallel for default(none) num_threads(threads_number)
         for(int i = 0; i < size * matrixData.partial_size; i++) {
             matrix[i] = 0.0;
         }
@@ -30,29 +31,29 @@ public:
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
-#pragma omp parallel for default(none) shared(p) num_threads(100)
+        #pragma omp parallel for default(none) shared(p) num_threads(threads_number)
         for(int i = 0; i < size;i++) {
             p[i] = 0;
         }
-#pragma omp parallel for default(none) shared(Ap) num_threads(100)
+        #pragma omp parallel for default(none) shared(Ap) num_threads(threads_number)
         for(int i = 0; i < matrixData.partial_size;i++) {
             Ap[i] = 0;
         }
         bool finished;
 
-#pragma omp parallel default(none) shared(finished, p, Ap, matrixData) num_threads(100)
+        #pragma omp parallel default(none) shared(finished, p, Ap, matrixData) num_threads()
         {
             while (true) {
 
 
-#pragma omp single
+                #pragma omp single
                 {
                     MPI_Bcast(&finished, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
                 }
                 if(finished) {
                     break;
                 }
-#pragma omp single
+                #pragma omp single
                 {
                     MPI_Request r;
                     MPI_Ibcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &r);
@@ -60,15 +61,15 @@ public:
                 }
 
 
-#pragma omp for simd
+                #pragma omp for simd
                 for (size_t i = 0; i < matrixData.partial_size; i += 1) {
                     Ap[i] = 0.0;
-#pragma omp simd
+                    #pragma omp simd
                     for (size_t j = 0; j < size; j++) {
                         Ap[i] += matrix[i * size + j] * p[j];
                     }
                 }
-#pragma omp single
+                #pragma omp single
                 {
                     MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
                                 MPI_COMM_WORLD);
@@ -94,6 +95,7 @@ private:
     size_t mem_alignment = 64;
     MatrixData matrixData;
     int rank;
+    int threads_number;
 };
 
 
