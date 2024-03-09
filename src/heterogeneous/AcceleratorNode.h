@@ -37,6 +37,7 @@ public:
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[matrixData.partial_size];
+        bool finish;
 #pragma omp parallel for default(none) shared(p) num_threads(100)
         for(int i = 0; i < size;i++) {
             p[i] = 0;
@@ -45,14 +46,17 @@ public:
         for(int i = 0; i < matrixData.partial_size;i++) {
             Ap[i] = 0;
         }
-        int cont = 0;
 
 
-            while (cont < size) {
+            while (true) {
 
 
                     MPI_Request r;
 
+                    MPI_Bcast(&finish, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
+                    if(finish) {
+                        break;
+                    }
                     MPI_Ibcast(p, size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &r);
                     MPI_Wait(&r, MPI_STATUS_IGNORE);
 
@@ -61,7 +65,6 @@ public:
 
                     MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
                                 MPI_COMM_WORLD);
-                    cont++;
 
 
 

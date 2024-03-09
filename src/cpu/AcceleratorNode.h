@@ -38,12 +38,11 @@ public:
         for(int i = 0; i < matrixData.partial_size;i++) {
             Ap[i] = 0;
         }
-        int cont = 0;
         bool finished;
 
-#pragma omp parallel default(none) shared(finished, p, Ap, matrixData, cont) num_threads(100)
+#pragma omp parallel default(none) shared(finished, p, Ap, matrixData) num_threads(100)
         {
-            while (cont < size) {
+            while (true) {
 
 
 #pragma omp single
@@ -73,7 +72,6 @@ public:
                 {
                     MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
                                 MPI_COMM_WORLD);
-                    cont++;
 
                 }
 

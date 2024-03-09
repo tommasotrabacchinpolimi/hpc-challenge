@@ -79,13 +79,13 @@ public:
     }
 
     void compute_conjugate_gradient() {
-        //std::cout << "starting to compute" << std::endl;
         double alpha;
         double beta;
         double rr;
         double rr_new;
         double bb;
         std::vector<double> r(size);
+
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[size];
@@ -103,6 +103,7 @@ public:
         }
         int iters;
         for(iters = 1; iters <= max_iters; iters++) {
+
 
             MPI_Bcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
             MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
@@ -133,28 +134,26 @@ public:
         delete[] Ap;
         delete[] p;
 
-        //MPI_Abort(MPI_COMM_WORLD, 0);
     }
 
     void compute_conjugate_gradient_parallel() {
-        std::cout << "test " << size << std::endl;
 
         double alpha;
         double beta;
         double rr;
         double rr_new;
         double bb;
-
+        bool TRUE = true;
+        bool FALSE = false;
         std::vector<double> r(size);
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
         double* Ap = new (std::align_val_t(mem_alignment))double[size];
 
         double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
-        //std::cout << "check1" << std::endl;
 
 
-#pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
+#pragma omp parallel for default(none) shared(FALSE, p, Ap, r, Ap_) num_threads(100)
         for(int i = 0; i < size; i++) {
             p[i] = rhs[i];
             Ap[i] = 0.0;
@@ -186,6 +185,7 @@ public:
                     total_iterations = iters;
                     MPI_Request request_broadcast;
                     MPI_Request request_gather;
+                    MPI_Bcast(&FALSE, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
                     MPI_Ibcast(&p[0], size, MPI_DOUBLE, 0, MPI_COMM_WORLD, &request_broadcast);
 
                     MPI_Gatherv(MPI_IN_PLACE, 0, MPI_DOUBLE, &Ap[0], (&(partial_size[0])),
@@ -251,6 +251,7 @@ public:
         auto execution_time_iterations = (double)std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / total_iterations;
         std::cout << "average iteration execution time = " << execution_time_iterations << std::endl;
 
+        MPI_Bcast(&TRUE,1,MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
         if(iters <= max_iters)
         {
             printf("Converged in %d iterations, relative error is %e\n", total_iterations, std::sqrt(rr_new / bb));
@@ -366,7 +367,6 @@ private:
     std::vector<double> rhs;
     std::vector<double> sol;
     double* matrix;
-    size_t total_device_number;
     int max_iters;
     double tol;
     MatrixData myMatrixData;
