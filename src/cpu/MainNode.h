@@ -29,14 +29,17 @@ public:
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         max_size.resize(world_size);
 
+        std::cout << "test0 = " << world_size << std::endl;
 
         read_rhs();
+        std::cout << "after rhs = " << size << std::endl;
+
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
         max_size[0] = max_memory / (size * sizeof(double));
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-
         std::cout << "test1 = " << size << std::endl;
+
 
         size_t total_capacity = 0;
         for(int i = 0; i < world_size; i++) {
