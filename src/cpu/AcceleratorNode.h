@@ -41,7 +41,7 @@ public:
         }
         bool finished;
 
-        #pragma omp parallel default(none) shared(finished, p, Ap, matrixData) num_threads()
+        #pragma omp parallel default(none) shared(finished, p, Ap, matrixData) num_threads(threads_number)
         {
             while (true) {
 
