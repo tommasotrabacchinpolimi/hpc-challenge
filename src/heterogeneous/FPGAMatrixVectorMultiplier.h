@@ -104,7 +104,7 @@ void FPGAMatrixVectorMultiplier::setup() {
         err = 0;
         device_A[i] = allocateDeviceReadOnly(&err, local_partial_size[i] * size, context);
 
-        linkBufferToDevice(queues[i], device_A[i]);
+        //linkBufferToDevice(queues[i], device_A[i]);
         if(rank == 1) {
             std::cout << "migrated A" << std::endl;
         }
