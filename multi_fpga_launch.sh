@@ -12,4 +12,4 @@ module load ifpgasdk && module load 520nmx && module load CMake && module load i
 cd build
 git pull
 make multi_node
-srun multi_node /project/home/p200301/tests/matrix10000.bin /project/home/p200301/tests/rhs10000.bin output_mpi.bin 200000 1e-16
+srun multi_node /project/home/p200301/tests/matrix1000.bin /project/home/p200301/tests/rhs1000.bin output_mpi.bin 1000 1e-16
