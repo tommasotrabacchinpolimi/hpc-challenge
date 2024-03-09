@@ -86,6 +86,7 @@ cl_mem allocateDevice(cl_int* err, size_t size, cl_context context) {
 
 cl_mem allocateDeviceReadOnly(cl_int* err, size_t size, cl_context context) {
     cl_mem ret = clCreateBuffer(context, CL_MEM_READ_ONLY, size * sizeof(double), NULL, NULL, err);
+    std::cout << "created :" << ret << std::endl;
     check_cl(*err, "Error in creating uninitialized Read-Only buffer");
     return ret;
 }
