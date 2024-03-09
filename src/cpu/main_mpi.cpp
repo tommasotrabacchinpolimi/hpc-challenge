@@ -44,9 +44,8 @@ int main(int argc, char** argv) {
 
         double* matrix;
         double* rhs;
-        size_t size = atoi(argv[6]);
         size_t tmp;
-        int max_iter = 10; //atoi(argv[4]);
+        int max_iter = atoi(argv[4]);
         double tol = atof(argv[5]);
 
         std::string matrix_path = argv[1];
