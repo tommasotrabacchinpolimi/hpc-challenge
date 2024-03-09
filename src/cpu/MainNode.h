@@ -36,18 +36,23 @@ public:
         max_size[0] = max_memory / (size * sizeof(double));
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
+        std::cout << "test1 = " << size << std::endl;
 
         size_t total_capacity = 0;
         for(int i = 0; i < world_size; i++) {
             total_capacity += max_size[i];
         }
         std::vector<double> quota(world_size);
+        std::cout << "test2 = " << size << std::endl;
+
         for(int i = 0; i < world_size; i++) {
             quota[i] = (double)max_size[i]/(double)total_capacity;
         }
 
         offset.resize(world_size);
         partial_size.resize(world_size);
+        std::cout << "test3 = " << size << std::endl;
+
         offset[0] = 0;
         for(int i = 1; i < world_size; i++) {
             offset[i] = offset[i-1] + std::min((size_t)(size*quota[i-1]), max_size[i-1]);
@@ -60,6 +65,8 @@ public:
         MPI_Type_commit(&matrixDataType);
 
         std::vector<MatrixData> matrixData(world_size);
+        std::cout << "test4 = " << size << std::endl;
+
         for(int i = 0; i < world_size; i++) {
             matrixData[i] = {(size_t)offset[i], (size_t)partial_size[i]};
         }
