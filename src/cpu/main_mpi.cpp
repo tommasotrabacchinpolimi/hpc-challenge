@@ -57,6 +57,7 @@ int main(int argc, char** argv) {
                                                       output_path, max_iter, tol);
 
         mainNode.init();
+        std::cout << "start" << std::endl;
 
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
