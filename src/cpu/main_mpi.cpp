@@ -33,7 +33,6 @@ bool read_matrix_from_file(const char * filename, double ** matrix_out, size_t *
 
 
 int main(int argc, char** argv) {
-    std::cout << "mpi version" << std::endl;
     MPI_Init(nullptr, nullptr);
     int rank;
     int world_size;

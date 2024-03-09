@@ -333,6 +333,7 @@ public:
         }
         auto stop = std::chrono::high_resolution_clock::now();
         auto execution_time_iterations = (double)std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / total_iterations;
+        std::cout << "average iteration execution time = " << execution_time_iterations << std::endl;
 
         if(iters <= max_iters)
         {
