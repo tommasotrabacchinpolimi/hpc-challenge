@@ -81,7 +81,6 @@ cl_int init_cl(cl_uint device_numbers, cl_command_queue** queues, cl_context* co
         std::cout << name << std::endl;
     }*/
 
-    std::cout << "found platform " << num_plat_found << std::endl;
 
     *mydev = (cl_device_id*)malloc(device_numbers * sizeof(cl_device_id));
 
@@ -136,7 +135,6 @@ void generate_rhs(size_t n, double value, double** rhs_out) {
 
 void conjugate_gradient(const double* matrix, const double* rhs, double* x, int size, double tol, int max_iters, cl_context context, cl_command_queue queue, cl_kernel kernel) {
 
-    std::cout << "starting conjugate gradient" << std::endl;
     cl_mem device_matrix;
     cl_mem device_rhs;
     cl_mem sol;
@@ -257,6 +255,10 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
 
 
 int main(int argc, char** argv) {
+    if(argc != 6) {
+        std::cout << "wrong number of parameters" << std::endl;
+        return 0;
+    }
     int max_iters = atoi(argv[4]);
     double tol = atof(argv[5]);
     cl_context context;

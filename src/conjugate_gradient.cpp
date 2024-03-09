@@ -281,8 +281,10 @@ void conjugate_gradients(const double * A, const double * b, double * x, size_t 
 
 int main(int argc, char ** argv)
 {
-    printf("\n");
-
+    if(argc != 9) {
+        std::cout << "wrong number of parameters" << std::endl;
+        return 0;
+    }
     size_t size = 5000;
     int max_iters = 3000;
     double rel_error = 1e-12;

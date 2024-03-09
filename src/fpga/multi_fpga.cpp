@@ -554,6 +554,10 @@ cl_kernel create_kernel(cl_program program, const char* kernel_name, cl_int* err
 
 
 int main(int argc, char** argv) {
+    if(argc != 7) {
+        std::cout << "wrong number of parameters" << std::endl;
+        return 0;
+    }
     size_t size;
     size_t tmp;
     int max_iters = atoi(argv[4]);
