@@ -222,6 +222,7 @@ public:
 
         double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
         //std::cout << "check1" << std::endl;
+        std::cout << "init completed" << std::endl;
 
 
 #pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
