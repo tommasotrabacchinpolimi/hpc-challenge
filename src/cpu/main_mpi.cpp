@@ -36,6 +36,8 @@ int main(int argc, char** argv) {
     std::cout << "mpi version" << std::endl;
     MPI_Init(nullptr, nullptr);
     int rank;
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     long execution_time_fpga;
 
@@ -43,9 +45,9 @@ int main(int argc, char** argv) {
 
         double* matrix;
         double* rhs;
-        size_t size;
+        size_t size = atoi(argv[6]);
         size_t tmp;
-        int max_iter = atoi(argv[4]);
+        int max_iter = 10; //atoi(argv[4]);
         double tol = atof(argv[5]);
 
         std::string matrix_path = argv[1];
@@ -55,17 +57,18 @@ int main(int argc, char** argv) {
         MainNode mainNode(matrix_path,
                                                       rhs_path,
                                                       output_path, max_iter, tol);
+        mainNode.size = size;
 
         mainNode.init();
         std::cout << "start" << std::endl;
 
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
-        std::cout << "handshake" << std::endl;
         mainNode.compute_conjugate_gradient();
         auto stop_fpga = std::chrono::high_resolution_clock::now();
         execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
 
+        std::cout << "test size = " << size << "rank size = " << world_size  <<std::endl;
         std::cout << "execution time = " << execution_time_fpga << std::endl;
         MPI_Abort(MPI_COMM_WORLD, 0);
     } else {

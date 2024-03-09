@@ -29,16 +29,13 @@ public:
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         max_size.resize(world_size);
 
-        std::cout << "test0 = " << world_size << std::endl;
 
         read_rhs_test();
-        std::cout << "after rhs = " << size << std::endl;
 
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
         max_size[0] = max_memory / (size * sizeof(double));
         MPI_Gather(MPI_IN_PLACE, 1, MPI_UNSIGNED_LONG, &max_size[0], 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-        std::cout << "test1 = " << size << std::endl;
 
 
         size_t total_capacity = 0;
@@ -46,7 +43,6 @@ public:
             total_capacity += max_size[i];
         }
         std::vector<double> quota(world_size);
-        std::cout << "test2 = " << size << std::endl;
 
         for(int i = 0; i < world_size; i++) {
             quota[i] = (double)max_size[i]/(double)total_capacity;
@@ -54,7 +50,6 @@ public:
 
         offset.resize(world_size);
         partial_size.resize(world_size);
-        std::cout << "test3 = " << size << std::endl;
 
         offset[0] = 0;
         for(int i = 1; i < world_size; i++) {
@@ -68,7 +63,6 @@ public:
         MPI_Type_commit(&matrixDataType);
 
         std::vector<MatrixData> matrixData(world_size);
-        std::cout << "test4 = " << size << std::endl;
 
         for(int i = 0; i < world_size; i++) {
             matrixData[i] = {(size_t)offset[i], (size_t)partial_size[i]};
@@ -76,7 +70,6 @@ public:
 
         MPI_Scatter(&matrixData[0], 1, matrixDataType, &myMatrixData, 1, matrixDataType, 0, MPI_COMM_WORLD);
 
-        std::cout << "sol size = " << size << std::endl;
         sol.resize(size);
 
         read_and_send_matrix_test();
@@ -227,7 +220,6 @@ public:
         double rr;
         double rr_new;
         double bb;
-        std::cout << "size = " << size << std::endl;
 
         std::vector<double> r(size);
 
@@ -236,7 +228,6 @@ public:
 
         double* Ap_ = new (std::align_val_t(mem_alignment))double[size];
         //std::cout << "check1" << std::endl;
-        std::cout << "init completed" << std::endl;
 
 
 #pragma omp parallel for default(none) shared(p, Ap, r, Ap_) num_threads(100)
@@ -253,6 +244,7 @@ public:
 
         int iters, total_iterations;
         double dot_result = 0;
+        auto start = std::chrono::high_resolution_clock::now();
 #pragma omp parallel default(none) shared(Ap_, max_iters, size, tol, matrix, p, Ap, sol, r, dot_result, rr_new, total_iterations, partial_size) firstprivate(alpha, beta, rr, bb, iters) num_threads(100)
         {
 
@@ -339,6 +331,8 @@ public:
                 }
             }
         }
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto execution_time_iterations = (double)std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / total_iterations;
 
         if(iters <= max_iters)
         {
@@ -360,6 +354,9 @@ public:
     ~MainNode() {
         delete[] matrix;
     }
+
+    size_t size;
+
 private:
 
 
@@ -379,7 +376,6 @@ private:
     }
 
     void read_rhs_test() {
-        size = 1000;
         rhs.resize(size);
 #pragma omp parallel for default(none) num_threads(100)
         for(int i = 0; i < size; i++) {
@@ -517,7 +513,6 @@ private:
     std::string matrix_file_path;
     std::string rhs_file_path;
     std::string output_file_path;
-    size_t size;
     int world_size;
     std::vector<int> offset;
     std::vector<int> partial_size;
