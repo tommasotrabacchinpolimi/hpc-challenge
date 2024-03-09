@@ -31,7 +31,7 @@ public:
 
         std::cout << "test0 = " << world_size << std::endl;
 
-        read_rhs();
+        read_rhs_test();
         std::cout << "after rhs = " << size << std::endl;
 
         MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
@@ -79,7 +79,7 @@ public:
         std::cout << "sol size = " << size << std::endl;
         sol.resize(size);
 
-        read_and_send_matrix();
+        read_and_send_matrix_test();
 
     }
 
@@ -378,6 +378,15 @@ private:
         is.close();
     }
 
+    void read_rhs_test() {
+        size = 1000;
+        rhs.resize(size);
+#pragma omp parallel for default(none) num_threads(100)
+        for(int i = 0; i < size; i++) {
+            rhs[i] = 1;
+        }
+    }
+
 
 
     void check_matrix(double* matrix, int nrows, int offset) {
@@ -426,6 +435,48 @@ private:
             MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
         }
         is.close();
+        delete[] matrix_;
+
+    }
+
+    void read_and_send_matrix_test() {
+        auto it = std::max_element(partial_size.begin(), partial_size.end());
+        size_t msize = *it;
+        double* matrix_ = new (std::align_val_t(mem_alignment)) double[msize * size];
+        matrix = new (std::align_val_t(mem_alignment)) double[partial_size[0] * size];
+
+#pragma omp parallel for default(none) num_threads(100)
+        for(int i = 0; i < partial_size[0] * size; i++) {
+            matrix[i] = 0.0;
+        }
+
+
+
+        //check_matrix(matrix, partial_size[0], 0);
+
+        for(int i = 0; i < world_size; i++) {
+            for(size_t j = 0; j < size * partial_size[i]; j++) {
+                size_t row = offset[i] + j / size;
+                size_t column = j % size;
+                if (row == column) {
+                    if(i == 0) {
+                        matrix[j] = 2;
+                    } else {
+                        matrix_[j] = 2;
+                    }
+
+                } else if(row == column + 1 || row == column  - 1) {
+                    if(i == 0) {
+                        matrix[j] = -1;
+                    } else {
+                        matrix_[j] = -1;
+                    }
+                }
+            }
+            if(i != 0) {
+                MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
+            }
+        }
         delete[] matrix_;
 
     }
