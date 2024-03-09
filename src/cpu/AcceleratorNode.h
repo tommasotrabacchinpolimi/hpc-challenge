@@ -63,7 +63,6 @@ public:
                 }
 #pragma omp single
                 {
-                    MPI_Request r;
                     MPI_Gatherv(Ap, matrixData.partial_size, MPI_DOUBLE, NULL, NULL, NULL, MPI_DOUBLE, 0,
                                 MPI_COMM_WORLD);
                     //MPI_Wait(&r, MPI_STATUS_IGNORE);
