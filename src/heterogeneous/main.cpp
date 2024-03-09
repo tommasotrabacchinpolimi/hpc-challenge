@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
         mainNode.init();
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
-        mainNode.compute_conjugate_gradient();
+        mainNode.compute_conjugate_gradient_parallel();
         auto stop_fpga = std::chrono::high_resolution_clock::now();
         execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
 
