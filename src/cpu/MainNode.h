@@ -210,11 +210,15 @@ public:
     }
 
     void compute_conjugate_gradient() {
+        std::cout << "test " << size << std::endl;
+
         double alpha;
         double beta;
         double rr;
         double rr_new;
         double bb;
+        std::cout << "size = " << size << std::endl;
+
         std::vector<double> r(size);
 
         double* p = new (std::align_val_t(mem_alignment))double[size];
