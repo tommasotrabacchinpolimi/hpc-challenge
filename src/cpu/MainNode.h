@@ -477,6 +477,14 @@ private:
                         matrix_[j] = -1;
                     }
                 }
+                else {
+                    std::cout << "0 ";
+                    if(i == 0) {
+                        matrix[j] = 0;
+                    } else {
+                        matrix_[j] = 0;
+                    }
+                }
             }
             if(i != 0) {
                 MPI_Send(matrix_, size * partial_size[i], MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
