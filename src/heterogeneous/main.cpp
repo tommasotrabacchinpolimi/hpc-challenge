@@ -235,15 +235,14 @@ int main(int argc, char** argv) {
 
 
     if(rank == 0) {
-        //double* matrix;
-        //double* rhs;
+        double* matrix;
+        double* rhs;
         size_t size;
         size_t tmp;
-        std::cout << "ciao" << std::endl;
         int max_iter = atoi(argv[4]);
         double tol = atof(argv[5]);
-        //read_matrix_from_file(argv[1], &matrix, &size, &size);
-        //read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
+        read_matrix_from_file(argv[1], &matrix, &size, &size);
+        read_matrix_from_file(argv[2], &rhs, &tmp, &tmp);
         std::string matrix_path = argv[1];
         std::string rhs_path = argv[2];
         std::string output_path = argv[3];
@@ -257,7 +256,7 @@ int main(int argc, char** argv) {
         auto stop_fpga = std::chrono::high_resolution_clock::now();
         execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
 
-        std::cout << "fpga execution time = " << execution_time_fpga << std::endl;
+        std::cout << "execution time(us) = " << execution_time_fpga << std::endl;
         MPI_Abort(MPI_COMM_WORLD, 0);
 
 

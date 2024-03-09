@@ -56,24 +56,22 @@ int main(int argc, char** argv) {
         MainNode mainNode(matrix_path,
                                                       rhs_path,
                                                       output_path, max_iter, tol);
-        mainNode.size = size;
 
         mainNode.init();
-        std::cout << "start" << std::endl;
 
-        auto start_fpga = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
         mainNode.compute_conjugate_gradient();
-        auto stop_fpga = std::chrono::high_resolution_clock::now();
-        execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
+        auto stop = std::chrono::high_resolution_clock::now();
+        execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count();
 
-        std::cout << "test size = " << size << "rank size = " << world_size  <<std::endl;
         std::cout << "execution time = " << execution_time_fpga << std::endl;
-        MPI_Abort(MPI_COMM_WORLD, 0);
+        MPI_Finalize();
     } else {
         AcceleratorNode acceleratorNode;
         acceleratorNode.init();
         acceleratorNode.handshake();
         acceleratorNode.compute();
+        MPI_Finalize();
     }
 }
