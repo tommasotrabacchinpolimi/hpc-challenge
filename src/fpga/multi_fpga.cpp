@@ -559,7 +559,7 @@ int main(int argc, char** argv) {
     int max_iters = atoi(argv[4]);
     double tol = atof(argv[5]);
     cl_int err = 0;
-    int number_device_required = 2;
+    int number_device_required = atof(argv[6]);
     int platform_index = 1;
 
     cl_command_queue* queues;
