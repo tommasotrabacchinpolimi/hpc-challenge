@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
 
         auto start_fpga = std::chrono::high_resolution_clock::now();
         mainNode.handshake();
+        std::cout << "handshake" << std::endl;
         mainNode.compute_conjugate_gradient();
         auto stop_fpga = std::chrono::high_resolution_clock::now();
         execution_time_fpga = std::chrono::duration_cast<std::chrono::microseconds>(stop_fpga - start_fpga).count();
