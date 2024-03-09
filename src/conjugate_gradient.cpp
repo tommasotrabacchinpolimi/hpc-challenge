@@ -297,7 +297,7 @@ int main(int argc, char ** argv)
     if(argc > 3) serial_trials = atoi(argv[3]);
     if(argc > 4) parallel_trials = atoi(argv[4]);
     if(argc > 5) threads_number = atoi(argv[5]);
-    max_iters = 2;
+    max_iters = 1;
     double* matrix;
     double* rhs;
     size_t ignore;
