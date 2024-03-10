@@ -11,6 +11,7 @@ cd build
 \
 Then, it is necessary to load some modules:
 ```module load ifpgasdk
+module load ifpgasdk
 module load 520nmx
 module load CMake
 module load intel
