@@ -8,7 +8,11 @@
 #SBATCH --account=p200301                  # project account
 #SBATCH --cpus-per-task=256                # CORES per task
 
-module load ifpgasdk && module load 520nmx && module load CMake && module load intel && module load deploy/EasyBuild
+#module load ifpgasdk && module load 520nmx && module load CMake && module load intel && module load deploy/EasyBuild
+module load 520nmx
+module load CMake
+module load intel
+module load deploy/EasyBuild
 cd build
 make mpi
 
@@ -20,7 +24,7 @@ make mpi
 #srun mpi /project/home/p200301/tests/matrix10000.bin /project/home/p200301/tests/rhs10000.bin output_mpi.bin 90000 1e-16 90000
 #srun mpi /project/home/p200301/tests/matrix10000.bin /project/home/p200301/tests/rhs10000.bin output_mpi.bin 100000 1e-16 100000
 #srun mpi /project/home/p200301/tests/matrix10000.bin /project/home/p200301/tests/rhs10000.bin output_mpi.bin 150000 1e-16 150000
-srun mpi /project/home/p200301/tests/matrix20000.bin /project/home/p200301/tests/rhs20000.bin output_mpi.bin 200000 1e-16 100
+#srun mpi /project/home/p200301/tests/matrix20000.bin /project/home/p200301/tests/rhs20000.bin output_mpi.bin 200000 1e-16 100
 #srun mpi /project/home/p200301/tests/matrix30000.bin /project/home/p200301/tests/rhs30000.bin output_mpi.bin 300000 1e-16 300000
 #srun mpi /project/home/p200301/tests/matrix40000.bin /project/home/p200301/tests/rhs40000.bin output_mpi.bin 400000 1e-16 400000
 #srun mpi /project/home/p200301/tests/matrix50000.bin /project/home/p200301/tests/rhs50000.bin output_mpi.bin 500000 1e-16 500000
