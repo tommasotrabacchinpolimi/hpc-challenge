@@ -49,7 +49,7 @@ In addition, the solution og the system is written to the output file.
 ## Multi FPGA
 To run the multi FPGA version
 ```
-./multi_fpga matrix_path rhs_path max_iters rel_error num_devices
+./multi_fpga matrix_path rhs_path output_file_path max_iters rel_error num_devices
 ```
 The program ouputs both the parallel and the serial execution time.
 In addition, the solution of the system is written to the output file.
