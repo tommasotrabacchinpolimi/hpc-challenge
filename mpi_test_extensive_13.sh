@@ -8,11 +8,11 @@
 #SBATCH --account=p200301                  # project account
 #SBATCH --cpus-per-task=256                # CORES per task
 
-#module load ifpgasdk && module load 520nmx && module load CMake && module load intel && module load deploy/EasyBuild
-module load 520nmx
-module load CMake
-module load intel
-module load deploy/EasyBuild
+module load ifpgasdk && module load 520nmx && module load CMake && module load intel && module load deploy/EasyBuild
+#module load 520nmx
+#module load CMake
+#module load intel
+#module load deploy/EasyBuild
 cd build
 make mpi
 
