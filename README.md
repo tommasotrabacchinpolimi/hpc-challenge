@@ -42,7 +42,7 @@ For the FPGA, there are 3 different versions:
 ### Single FPGA
 To run the single FPGA version
 ```
-./single_fpga matrix_path rhs_path max_iters rel_error
+./single_fpga matrix_path rhs_path output_file_path max_iters rel_error
 ```
 The program outputs the parallel execution time.
 In addition, the solution og the system is written to the output file.
